@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss - Gestao empresarial </title>
+    <!-- Link para Font Awesome (Cloudflare CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="css/menu.css">
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+
+    <style>
+        /* Estilo do iframe que carrega o conteúdo */
+        iframe {
+            width: calc(100% - 250px); /* Compensa a largura do menu lateral */
+            height: 100vh;
+            border: none;
+            margin-left: 250px; /* Alinha ao lado do menu */
+        }
+
+        /* Estilo da barra lateral */
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #1E1E2E; /* Cinza escuro */
+            color: #E4E4E7;
+            padding-top: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        /* Estilo do logo */
+        .logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 8px; /* Bordas suaves */
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 16px;
+            color: #E4E4E7;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar a i {
+            margin-right: 10px;
+            font-size: 20px; /* Tamanho dos ícones */
+        }
+
+        .sidebar a:hover {
+            background-color: #4CAF50; /* Verde claro */
+            color: #FFFFFF;
+        }
+
+        @media screen and (max-width: 768px) {
+            .sidebar {
+                width: 200px; /* Ajusta largura em telas menores */
+            }
+
+            iframe {
+                margin-left: 200px; /* Ajusta iframe para largura menor */
+            }
+
+            .sidebar a {
+                font-size: 14px; /* Reduz tamanho do texto */
+                padding: 10px 15px; /* Links mais compactos */
+            }
+
+            .logo img {
+                max-width: 70%; /* Reduz tamanho do logo */
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto; /* Ajusta altura para telas muito pequenas */
+            }
+
+            iframe {
+                margin: 0; /* Remove margem do iframe */
+            }
+
+            .logo img {
+                max-width: 60%; /* Ajusta logo para telas muito pequenas */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Principal -->
+    <div class="sidebar">
+        <!-- Logo -->
+        <div class="logo">
+            <img src="img/logo.png" alt="Logo do Programa">
+        </div>
+        <a href="cadastromateriais.html" target="conteudo"><i class="fas fa-tools"></i>Cadastro de Materiais e Serviços</a>
+        <a href="cadastroclientes.html" target="conteudo"><i class="fas fa-user-friends"></i>Cadastro de Clientes</a>
+        <a href="clientes.html" target="conteudo"><i class="fas fa-address-book"></i>Tela do Cliente</a>
+        <a href="telaorcamento.html" target="conteudo"><i class="fas fa-file-invoice-dollar"></i>Tela de Orçamentos</a>
+        <a href="pedidos.html" target="conteudo"><i class="fas fa-shopping-cart"></i>Tela de Pedidos</a>
+        <a href="calendariorecebimentos.html" target="conteudo"><i class="fas fa-calendar-check"></i>Calendário de Recebimentos</a>
+        <a href="calendariopagamentos.html" target="conteudo"><i class="fas fa-calendar-alt"></i>Calendário de Contas a Pagar</a>
+    </div>
+
+    <!-- Conteúdo dinâmico -->
+    <iframe name="conteudo" src="cadastromateriais.html"></iframe>
+</body>
+</html>

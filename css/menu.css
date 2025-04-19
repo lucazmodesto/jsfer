@@ -1,0 +1,106 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Estilo da barra lateral */
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #1E1E2E; /* Cor cinza escuro moderno */
+    color: #E4E4E7; /* Texto claro e suave */
+    padding-top: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease; /* Para entrada animada em telas menores */
+    z-index: 1000; /* Prioridade visual */
+}
+
+/* Links do menu */
+.sidebar a {
+    padding: 15px 20px;
+    text-decoration: none;
+    font-size: 16px;
+    color: #E4E4E7;
+    display: block;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* Hover nos links */
+.sidebar a:hover {
+    background-color: #4CAF50; /* Destaque com verde claro */
+    color: #FFFFFF; /* Texto em branco */
+}
+
+/* Estilo do conteúdo principal */
+body {
+    margin-left: 250px; /* Ajusta para dar espaço ao menu lateral */
+    background-color: #F7F7F9; /* Fundo claro e limpo */
+    color: #333;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Responsividade para telas pequenas */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        width: 200px; /* Reduz largura da barra lateral */
+    }
+
+    .sidebar a {
+        font-size: 14px; /* Reduz tamanho do texto dos links */
+        padding: 10px 15px; /* Links mais compactos */
+    }
+
+    body {
+        margin-left: 200px; /* Ajusta margem para largura reduzida */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .sidebar {
+        width: 100%; /* Barra lateral ocupa toda a largura */
+        height: auto; /* Ajusta altura para telas pequenas */
+        position: relative; /* Permite que a barra seja exibida no topo */
+        transform: translateX(-100%); /* Oculta a barra lateral inicialmente */
+    }
+
+    .sidebar.open {
+        transform: translateX(0); /* Exibe barra lateral ao ativar */
+    }
+
+    .sidebar a {
+        font-size: 14px; /* Links mais compactos */
+        padding: 10px; /* Espaçamento reduzido */
+        border-bottom: none; /* Remove linhas divisórias */
+    }
+
+    body {
+        margin: 0; /* Remove margem lateral */
+    }
+
+    /* Botão de ativação da barra lateral */
+    .toggle-sidebar {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background-color: #4CAF50;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 5px;
+        padding: 10px;
+        font-size: 16px;
+        z-index: 1100;
+        cursor: pointer;
+    }
+
+    .toggle-sidebar:hover {
+        background-color: #388E3C;
+    }
+}

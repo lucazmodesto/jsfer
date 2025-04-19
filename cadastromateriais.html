@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/cadastromateriais.css">
+    <title>Cadastro de Materiais e Serviços</title>
+</head>
+<body>
+    <div class="container">
+        <!-- Título -->
+        <h1>Cadastro de Materiais e Serviços</h1>
+
+        <!-- Formulário de Cadastro -->
+        <form id="form-material">
+            <div>
+                <label for="tipo">Tipo</label>
+                <select id="tipo" required>
+                    <option value="">Selecione...</option>
+                    <option value="material">Material</option>
+                    <option value="serviço">Serviço</option>
+                </select>
+            </div>
+            <div>
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" placeholder="Digite o nome" required>
+            </div>
+            <div>
+                <label for="preco">Preço</label>
+                <input type="number" id="preco" placeholder="Digite o preço (ex.: 100.00)" step="0.01" required>
+            </div>
+            <div>
+                <label for="medida">Unidade de Medida</label>
+                <select id="medida" required>
+                    <option value="">Selecione...</option>
+                    <option value="quilo">Quilo</option>
+                    <option value="unidade">Unidade</option>
+                    <option value="metro">Metro</option>
+                    <option value="horas">Horas</option>
+                </select>
+            </div>
+            <button type="submit">Cadastrar</button>
+        </form>
+
+        <!-- Tabela de Materiais e Serviços -->
+        <h2>Itens Cadastrados</h2>
+        <table id="tabela-materiais">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Nome</th>
+                    <th>Preço</th>
+                    <th>Unidade de Medida</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Os itens serão inseridos dinamicamente aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        // Importar funções do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
+            authDomain: "novojsfer.firebaseapp.com",
+            projectId: "novojsfer",
+            storageBucket: "novojsfer.firebasestorage.app",
+            messagingSenderId: "610404413021",
+            appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
+        };
+
+        // Inicializar Firebase e Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Função para cadastrar item (Material ou Serviço)
+        document.getElementById("form-material").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const tipo = document.getElementById("tipo").value;
+            const nome = document.getElementById("nome").value.trim();
+            const preco = parseFloat(document.getElementById("preco").value);
+            const medida = document.getElementById("medida").value;
+
+            try {
+                const docRef = await addDoc(collection(db, "materiais"), {
+                    tipo: tipo,
+                    nome: nome,
+                    preco: preco,
+                    medida: medida
+                });
+
+                alert(`"${nome}" (${tipo}) cadastrado com sucesso!`);
+                document.getElementById("form-material").reset();
+
+                listarMateriais(); // Atualiza tabela
+            } catch (error) {
+                console.error("Erro ao cadastrar:", error);
+            }
+        });
+
+        // Função para listar itens
+        async function listarMateriais() {
+            const tabelaBody = document.querySelector("#tabela-materiais tbody");
+            tabelaBody.innerHTML = ""; // Limpar tabela antes de preencher
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "materiais"));
+                querySnapshot.forEach((doc) => {
+                    const item = doc.data();
+                    const novaLinha = `
+                        <tr>
+                            <td>${item.tipo}</td>
+                            <td>${item.nome}</td>
+                            <td>R$ ${item.preco.toFixed(2)}</td>
+                            <td>${item.medida}</td>
+                            <td>
+                                <button onclick="excluirItem('${doc.id}', '${item.nome}')">Excluir</button>
+                            </td>
+                        </tr>`;
+                    tabelaBody.innerHTML += novaLinha;
+                });
+            } catch (error) {
+                console.error("Erro ao listar materiais:", error);
+            }
+        }
+
+        // Função para excluir item
+        window.excluirItem = async function (id, nome) {
+            const confirmacao = confirm(`Tem certeza de que deseja excluir "${nome}"?`);
+            if (confirmacao) {
+                try {
+                    await deleteDoc(doc(db, "materiais", id));
+                    alert(`"${nome}" foi excluído com sucesso!`);
+                    listarMateriais(); // Atualiza tabela
+                } catch (error) {
+                    console.error("Erro ao excluir item:", error);
+                }
+            }
+        };
+
+        // Chamar função ao carregar a página
+        window.addEventListener("load", listarMateriais);
+    </script>
+</body>
+</html>

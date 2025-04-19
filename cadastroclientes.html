@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/cadastromateriais.css">
+    <title>Cadastro de Clientes</title>
+</head>
+<body>
+    <div class="container">
+        <!-- Título -->
+        <h1>Cadastro de Clientes</h1>
+
+        <!-- Formulário de Cadastro -->
+        <form id="form-cliente">
+            <div>
+                <label for="empresa">Nome da Empresa</label>
+                <input type="text" id="empresa" placeholder="Digite o nome da empresa" required>
+            </div>
+            <div>
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="Digite o e-mail" required>
+            </div>
+            <div>
+                <label for="telefone">Telefone</label>
+                <input type="tel" id="telefone" placeholder="Digite o telefone" required>
+            </div>
+            <div>
+                <label for="comprador">Nome do Comprador</label>
+                <input type="text" id="comprador" placeholder="Digite o nome do comprador" required>
+            </div>
+            <button type="submit">Cadastrar Cliente</button>
+        </form>
+
+        <!-- Tabela de Clientes -->
+        <h2>Lista de Clientes</h2>
+        <table id="tabela-clientes">
+            <thead>
+                <tr>
+                    <th>Empresa</th>
+                    <th>E-mail</th>
+                    <th>Telefone</th>
+                    <th>Comprador</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Os clientes serão inseridos dinamicamente aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        // Importar funções do Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
+            authDomain: "novojsfer.firebaseapp.com",
+            projectId: "novojsfer",
+            storageBucket: "novojsfer.firebasestorage.app",
+            messagingSenderId: "610404413021",
+            appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
+        };
+
+        // Inicializar Firebase e Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Função para cadastrar cliente
+        document.getElementById("form-cliente").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const empresa = document.getElementById("empresa").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const telefone = document.getElementById("telefone").value.trim();
+            const comprador = document.getElementById("comprador").value.trim();
+
+            try {
+                const docRef = await addDoc(collection(db, "clientes"), {
+                    empresa: empresa,
+                    email: email,
+                    telefone: telefone,
+                    comprador: comprador
+                });
+
+                alert(`Cliente "${empresa}" cadastrado com sucesso!`);
+                document.getElementById("form-cliente").reset();
+
+                listarClientes(); // Atualiza tabela
+            } catch (error) {
+                console.error("Erro ao cadastrar cliente:", error);
+            }
+        });
+
+        // Função para listar clientes
+        async function listarClientes() {
+            const tabelaBody = document.querySelector("#tabela-clientes tbody");
+            tabelaBody.innerHTML = ""; // Limpar tabela antes de preencher
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "clientes"));
+                querySnapshot.forEach((doc) => {
+                    const cliente = doc.data();
+                    const novaLinha = `
+                        <tr>
+                            <td>${cliente.empresa}</td>
+                            <td>${cliente.email}</td>
+                            <td>${cliente.telefone}</td>
+                            <td>${cliente.comprador}</td>
+                            <td>
+                                <button onclick="excluirCliente('${doc.id}', '${cliente.empresa}')">Excluir</button>
+                            </td>
+                        </tr>`;
+                    tabelaBody.innerHTML += novaLinha;
+                });
+            } catch (error) {
+                console.error("Erro ao listar clientes:", error);
+            }
+        }
+
+        // Função para excluir cliente
+        window.excluirCliente = async function (id, empresa) {
+            const confirmacao = confirm(`Tem certeza de que deseja excluir "${empresa}"?`);
+            if (confirmacao) {
+                try {
+                    await deleteDoc(doc(db, "clientes", id));
+                    alert(`"${empresa}" foi excluído com sucesso!`);
+                    listarClientes(); // Atualiza tabela
+                } catch (error) {
+                    console.error("Erro ao excluir cliente:", error);
+                }
+            }
+        };
+
+        // Chamar função ao carregar a página
+        window.addEventListener("load", listarClientes);
+    </script>
+</body>
+</html>

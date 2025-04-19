@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/cadastromateriais.css">
+    <title>Clientes</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Clientes</h1>
+
+        <!-- Lista de Clientes -->
+        <div>
+            <ul id="lista-clientes">
+                <!-- Clientes serão preenchidos dinamicamente -->
+            </ul>
+        </div>
+
+        <!-- Orçamentos do Cliente -->
+        <h2>Orçamentos</h2>
+        <div id="orcamentos-cliente">
+            <p>Selecione um cliente para visualizar os orçamentos.</p>
+        </div>
+
+        <!-- Botão para Adicionar Novo Orçamento -->
+        <div>
+            <button id="novo-orcamento" style="display: none;">Adicionar Novo Orçamento</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
+            authDomain: "novojsfer.firebaseapp.com",
+            projectId: "novojsfer",
+            storageBucket: "novojsfer.firebasestorage.app",
+            messagingSenderId: "610404413021",
+            appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Função para carregar clientes
+        async function carregarClientes() {
+            const listaClientes = document.getElementById("lista-clientes");
+            try {
+                const querySnapshot = await getDocs(collection(db, "clientes"));
+                querySnapshot.forEach((doc) => {
+                    const cliente = doc.data();
+                    const li = document.createElement("li");
+                    li.textContent = `${cliente.empresa} - ${cliente.comprador}`;
+                    li.dataset.clienteId = doc.id;
+                    li.addEventListener("click", () => carregarOrcamentos(doc.id, cliente.empresa));
+                    listaClientes.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar clientes:", error);
+            }
+        }
+
+        // Função para carregar orçamentos de um cliente
+        async function carregarOrcamentos(clienteId, clienteNome) {
+            const orcamentosDiv = document.getElementById("orcamentos-cliente");
+            const novoOrcamentoBtn = document.getElementById("novo-orcamento");
+
+            // Exibe botão de adicionar novo orçamento
+            novoOrcamentoBtn.style.display = "block";
+            novoOrcamentoBtn.onclick = () => {
+                const urlNovoOrcamento = `telaorcamento.html?clienteId=${clienteId}&clienteNome=${encodeURIComponent(clienteNome)}`;
+                window.open(urlNovoOrcamento, "_self");
+            };
+
+            orcamentosDiv.innerHTML = `<h3>Orçamentos de ${clienteNome}</h3>`;
+
+            try {
+                const orcamentoQuery = query(collection(db, "orcamentos"), where("clienteId", "==", clienteId));
+                const querySnapshot = await getDocs(orcamentoQuery);
+
+                if (querySnapshot.empty) {
+                    orcamentosDiv.innerHTML += "<p>Não há orçamentos cadastrados para este cliente.</p>";
+                    return;
+                }
+
+                const ul = document.createElement("ul");
+                querySnapshot.forEach((doc) => {
+                    const orcamento = doc.data();
+                    const li = document.createElement("li");
+                    li.innerHTML = `<a href="telaorcamento.html?orcamentoId=${doc.id}" target="_self">Orçamento #${doc.id} - Total: R$ ${orcamento.totalGeral}</a>`;
+                    ul.appendChild(li);
+                });
+                orcamentosDiv.appendChild(ul);
+            } catch (error) {
+                console.error("Erro ao carregar orçamentos:", error);
+                orcamentosDiv.innerHTML += "<p>Erro ao carregar os orçamentos.</p>";
+            }
+        }
+
+        // Carregar clientes ao iniciar
+        window.addEventListener("load", () => {
+            carregarClientes();
+        });
+    </script>
+</body>
+</html>

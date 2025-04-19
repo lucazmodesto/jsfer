@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+     <link rel="stylesheet" href="css/cadastromateriais.css">
+    <title>Tela de Orçamentos</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Orçamento</h1>
+
+        <!-- Seleção de Cliente -->
+        <div>
+            <label for="cliente">Selecionar Cliente</label>
+            <select id="cliente" required>
+                <option value="">Selecione um cliente...</option>
+                <!-- Clientes serão preenchidos dinamicamente -->
+            </select>
+        </div>
+
+        <!-- Adicionar Itens -->
+        <h2>Adicionar Itens</h2>
+        <div>
+            <label for="itens-cadastrados">Materiais/Serviços Cadastrados</label>
+            <select id="itens-cadastrados">
+                <option value="">Selecione um item...</option>
+                <!-- Itens serão preenchidos dinamicamente -->
+            </select>
+            <button id="adicionar-item-cadastrado">Adicionar Item Selecionado</button>
+        </div>
+        <div>
+            <button id="adicionar-item-nao-cadastrado">Adicionar Item Não Cadastrado</button>
+        </div>
+
+        <!-- Tabela de Serviços/Materiais -->
+        <h2>Itens do Orçamento</h2>
+        <table id="tabela-orcamento">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Descrição</th>
+                    <th>Quantidade</th>
+                    <th>Preço Unitário</th>
+                    <th>Subtotal</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Itens serão preenchidos dinamicamente -->
+            </tbody>
+        </table>
+        <p><strong>Total Geral: R$ <span id="total-geral">0.00</span></strong></p>
+
+        <!-- Prazo -->
+        <div>
+            <label for="prazo-entrega">Prazo de Entrega</label>
+            <input type="date" id="prazo-entrega">
+        </div>
+        <div>
+            <label for="prazo-pagamento">Prazo de Pagamento</label>
+            <input type="date" id="prazo-pagamento">
+        </div>
+
+        <!-- Botões -->
+        <div>
+            <button id="salvar-orcamento">Salvar Orçamento</button>
+            <button id="gerar-pdf">Gerar PDF</button>
+            <button id="enviar-whatsapp">Enviar por WhatsApp</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
+            authDomain: "novojsfer.firebaseapp.com",
+            projectId: "novojsfer",
+            storageBucket: "novojsfer.firebasestorage.app",
+            messagingSenderId: "610404413021",
+            appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function carregarClientes() {
+            const clienteSelect = document.getElementById("cliente");
+            try {
+                const querySnapshot = await getDocs(collection(db, "clientes"));
+                querySnapshot.forEach((doc) => {
+                    const cliente = doc.data();
+                    const option = document.createElement("option");
+                    option.value = JSON.stringify({ id: doc.id, nome: cliente.empresa });
+                    option.textContent = `${cliente.empresa} - ${cliente.comprador}`;
+                    clienteSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar clientes:", error);
+            }
+        }
+
+        async function carregarItensCadastrados() {
+            const itensSelect = document.getElementById("itens-cadastrados");
+            try {
+                const querySnapshot = await getDocs(collection(db, "materiais"));
+                querySnapshot.forEach((doc) => {
+                    const item = doc.data();
+                    const option = document.createElement("option");
+                    option.value = JSON.stringify({ nome: item.nome, preco: item.preco });
+                    option.textContent = `${item.nome} - R$ ${item.preco.toFixed(2)}`;
+                    itensSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar itens cadastrados:", error);
+            }
+        }
+
+        document.getElementById("adicionar-item-cadastrado").addEventListener("click", () => {
+            const itensSelect = document.getElementById("itens-cadastrados");
+            const itemSelecionado = itensSelect.value;
+            if (!itemSelecionado) return alert("Selecione um item!");
+            const { nome, preco } = JSON.parse(itemSelecionado);
+            adicionarLinhaTabela(nome, "", 1, preco);
+        });
+
+        document.getElementById("adicionar-item-nao-cadastrado").addEventListener("click", () => {
+            adicionarLinhaTabela("Novo Item", "", 1, 0.00);
+        });
+
+        
+
+        function adicionarLinhaTabela(item, descricao, quantidade, precoUnitario) {
+            const tabelaBody = document.querySelector("#tabela-orcamento tbody");
+            const novaLinha = document.createElement("tr");
+            novaLinha.innerHTML = `
+                <td>${item}</td>
+                <td><input type="text" value="${descricao}"></td>
+                <td><input type="number" value="${quantidade}" class="quantidade" onchange="atualizarTotalGeral()"></td>
+                <td><input type="number" value="${precoUnitario}" step="0.01" class="preco-unitario" onchange="atualizarTotalGeral()"></td>
+                <td class="subtotal">R$ ${(quantidade * precoUnitario).toFixed(2)}</td>
+                <td><button onclick="removerLinha(this)">Remover</button></td>
+            `;
+            tabelaBody.appendChild(novaLinha);
+            atualizarTotalGeral();
+        }
+
+        window.removerLinha = function (botao) {
+            botao.parentElement.parentElement.remove();
+            atualizarTotalGeral();
+        };
+
+        window.atualizarTotalGeral = function () {
+            let totalGeral = 0;
+            const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
+            linhas.forEach((linha) => {
+                const quantidade = parseFloat(linha.querySelector(".quantidade").value) || 0;
+                const precoUnitario = parseFloat(linha.querySelector(".preco-unitario").value) || 0;
+                const subtotal = quantidade * precoUnitario;
+                linha.querySelector(".subtotal").textContent = `R$ ${subtotal.toFixed(2)}`;
+                totalGeral += subtotal;
+            });
+            document.getElementById("total-geral").textContent = totalGeral.toFixed(2);
+        };
+
+        document.getElementById("salvar-orcamento").addEventListener("click", async () => {
+            const clienteSelect = document.getElementById("cliente");
+            const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
+
+            if (!clienteSelecionado) {
+                alert("Selecione um cliente para salvar o orçamento!");
+                return;
+            }
+
+            const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
+            const itens = [];
+
+            linhas.forEach((linha) => {
+                const item = linha.querySelector("td:first-child").textContent.trim();
+                const descricao = linha.querySelector("td:nth-child(2) input").value.trim();
+                const quantidade = parseFloat(linha.querySelector(".quantidade").value) || 0;
+                const precoUnitario = parseFloat(linha.querySelector(".preco-unitario").value) || 0;
+                const subtotal = parseFloat(linha.querySelector(".subtotal").textContent.replace("R$", "").trim()) || 0;
+                itens.push({ item, descricao, quantidade, precoUnitario, subtotal });
+            });
+
+            const prazoEntrega = document.getElementById("prazo-entrega").value;
+            const prazoPagamento = document.getElementById("prazo-pagamento").value;
+            const totalGeral = document.getElementById("total-geral").textContent;
+
+            try {
+                await addDoc(collection(db, "orcamentos"), {
+                    clienteId: clienteSelecionado.id,
+                    clienteNome: clienteSelecionado.nome,
+                    itens,
+                    totalGeral,
+                    prazoEntrega,
+                    prazoPagamento,
+                                    });
+
+                alert("Orçamento salvo com sucesso!");
+
+                // Limpa o formulário após salvar
+                document.getElementById("cliente").value = "";
+                document.querySelector("#tabela-orcamento tbody").innerHTML = "";
+                document.getElementById("total-geral").textContent = "0.00";
+                document.getElementById("prazo-entrega").value = "";
+                document.getElementById("prazo-pagamento").value = "";
+            } catch (error) {
+                console.error("Erro ao salvar orçamento:", error);
+                alert("Erro ao salvar o orçamento. Verifique o console.");
+            }
+        });
+
+        // Carregar dados ao iniciar
+        window.addEventListener("load", () => {
+            carregarClientes();
+            carregarItensCadastrados();
+        });
+    </script>
+</body>
+</html>
+

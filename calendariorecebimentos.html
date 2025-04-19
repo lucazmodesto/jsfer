@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário de Recebimentos</title>
+    <style>
+      body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #F4F4F9;
+}
+
+.container {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #FFFFFF;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+form {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #F9F9FF;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    font-weight: bold;
+}
+
+input, select, button {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #5A9EDB;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #497FB5;
+}
+
+.calendar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.day {
+    width: calc(100% / 3 - 15px); /* Ajusta para 3 colunas em telas maiores */
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #FFFFFF;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.day:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.day.paid {
+    background-color: #D4EDDA; /* Verde claro */
+    color: #155724;
+}
+
+.day-header {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+
+.day-content {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+}
+
+.btn-cobrar, .btn-pago {
+    display: block;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+    text-align: center;
+    background-color: #5A9EDB;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-cobrar:hover {
+    background-color: #497FB5;
+}
+
+.btn-pago {
+    background-color: #4CAF50;
+}
+
+.btn-pago:hover {
+    background-color: #388E3C;
+}
+
+/* Responsividade para smartphones */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .calendar {
+        gap: 10px;
+    }
+
+    .day {
+        width: calc(100% / 2 - 10px); /* Ajusta para 2 colunas em telas menores */
+        padding: 10px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .day {
+        width: 100%; /* Ajusta para 1 coluna em telas muito pequenas */
+        padding: 10px;
+    }
+
+    .btn-cobrar, .btn-pago {
+        font-size: 0.8rem; /* Botões menores para telas pequenas */
+        padding: 5px;
+    }
+
+    h1 {
+        font-size: 1.5rem; /* Reduz tamanho do título em telas menores */
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calendário de Recebimentos</h1>
+
+        <!-- Formulário reduzido -->
+        <form id="form-pagamento">
+            <label for="descricao">Descrição</label>
+            <input type="text" id="descricao" placeholder="Ex.: Mensalidade, Fatura, etc." required>
+            <label for="valor">Valor</label>
+            <input type="number" id="valor" placeholder="Ex.: 150.00" step="0.01" required>
+            <label for="data-pagamento">Data de Vencimento</label>
+            <input type="date" id="data-pagamento" required>
+            <label for="cliente">Vincular Cliente</label>
+            <select id="cliente">
+                <option value="">Sem cliente vinculado</option>
+            </select>
+            <button type="submit">Adicionar</button>
+        </form>
+
+        <!-- Calendário -->
+        <div class="calendar" id="calendario"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
+            authDomain: "novojsfer.firebaseapp.com",
+            projectId: "novojsfer",
+            storageBucket: "novojsfer.firebasestorage.app",
+            messagingSenderId: "610404413021",
+            appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function carregarClientes() {
+            const clienteSelect = document.getElementById("cliente");
+            try {
+                const querySnapshot = await getDocs(collection(db, "clientes"));
+                querySnapshot.forEach((doc) => {
+                    const cliente = doc.data();
+                    const option = document.createElement("option");
+                    option.value = JSON.stringify({ id: doc.id, nome: cliente.empresa, telefone: cliente.telefone });
+                    option.textContent = `${cliente.empresa} - ${cliente.comprador}`;
+                    clienteSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar clientes:", error);
+            }
+        }
+
+        document.getElementById("form-pagamento").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const clienteSelect = document.getElementById("cliente");
+            const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
+            const descricao = document.getElementById("descricao").value;
+            const valor = document.getElementById("valor").value;
+            const dataPagamento = document.getElementById("data-pagamento").value;
+
+            try {
+                await addDoc(collection(db, "recebimentos"), {
+                    clienteId: clienteSelecionado?.id || null,
+                    clienteNome: clienteSelecionado?.nome || null,
+                    descricao,
+                    valor,
+                    dataPagamento,
+                    telefone: clienteSelecionado?.telefone || null,
+                    pago: false
+                });
+
+                alert("Pagamento adicionado ao calendário!");
+                carregarCalendario();
+            } catch (error) {
+                console.error("Erro ao adicionar pagamento:", error);
+            }
+        });
+
+        function formatarDataBrasileira(data) {
+            const [ano, mes, dia] = data.split("-");
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        async function carregarCalendario() {
+            const calendarioDiv = document.getElementById("calendario");
+            calendarioDiv.innerHTML = "";
+
+            const querySnapshot = await getDocs(query(collection(db, "recebimentos"), orderBy("dataPagamento")));
+            querySnapshot.forEach((docSnapshot) => {
+                const pagamento = docSnapshot.data();
+                const pagamentoId = docSnapshot.id;
+
+                const diaDiv = document.createElement("div");
+                diaDiv.classList.add("day");
+                if (pagamento.pago) diaDiv.classList.add("paid");
+
+                diaDiv.innerHTML = `
+                    <div class="day-header">${formatarDataBrasileira(pagamento.dataPagamento)}</div>
+                    <div class="day-content"><strong>${pagamento.descricao}</strong></div>
+                    <div class="day-content">R$ ${parseFloat(pagamento.valor).toFixed(2)}</div>
+                    ${pagamento.clienteNome ? `<div class="day-content">${pagamento.clienteNome}</div>` : ""}
+                `;
+
+                if (!pagamento.pago) {
+                    const btnPago = document.createElement("button");
+                    btnPago.textContent = "Marcar como Pago";
+                    btnPago.classList.add("btn-pago");
+                    btnPago.addEventListener("click", async () => {
+                        await updateDoc(doc(db, "recebimentos", pagamentoId), { pago: true });
+                        alert("Pagamento marcado como pago!");
+                        carregarCalendario();
+                    });
+                    diaDiv.appendChild(btnPago);
+                }
+
+                if (pagamento.telefone) {
+                                       const btnCobrar = document.createElement("button");
+                    btnCobrar.textContent = "Cobrar via WhatsApp";
+                    btnCobrar.classList.add("btn-cobrar");
+                    btnCobrar.addEventListener("click", () => {
+                        const mensagem = `Olá! Este é um lembrete  sobre o vencimento de "${pagamento.descricao}".\nValor: R$ ${pagamento.valor}\nPor favor, entre em contato para mais detalhes.`;
+                        const url = `https://wa.me/${pagamento.telefone}?text=${encodeURIComponent(mensagem)}`;
+                        window.open(url, "_blank");
+                    });
+                    diaDiv.appendChild(btnCobrar);
+                }
+
+                calendarioDiv.appendChild(diaDiv);
+            });
+        }
+
+        // Carregar clientes e calendário ao iniciar
+        window.addEventListener("load", () => {
+            carregarClientes();
+            carregarCalendario();
+        });
+    </script>
+</body>
+</html>

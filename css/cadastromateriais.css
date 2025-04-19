@@ -1,0 +1,164 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Estilo geral do body */
+body {
+    background-color: #F7F8FA; /* Fundo claro e limpo */
+    color: #2F2F2F; /* Texto escuro e sofisticado */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 10px;
+}
+
+/* Container principal */
+.container {
+    width: 90%;
+    max-width: 900px;
+    background: #FFFFFF; /* Fundo branco puro */
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra refinada */
+    text-align: center;
+    border: 1px solid #E0E0E0; /* Borda leve e profissional */
+}
+
+/* Título principal */
+h1 {
+    font-size: 2rem;
+    color: #3A3A3A; /* Cinza premium */
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* Formulário */
+form {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3A3A3A;
+    margin-bottom: 5px;
+    display: block;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #D1D1D1; /* Bordas refinadas */
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: #F9F9F9;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #5A9EDB; /* Destaque azul corporativo */
+    box-shadow: 0 0 6px rgba(90, 158, 219, 0.4);
+}
+
+/* Botão */
+button {
+    background-color: #5A9EDB; /* Azul corporativo elegante */
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #497FB5; /* Azul mais escuro */
+}
+
+/* Tabela */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    font-size: 0.9rem;
+}
+
+table th, table td {
+    text-align: left;
+    padding: 10px;
+    border: 1px solid #E0E0E0; /* Linhas refinadas */
+}
+
+table th {
+    background-color: #F5F5F5; /* Cinza claro */
+    color: #2F2F2F;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+table tr:nth-child(even) {
+    background-color: #FAFAFA; /* Linhas alternadas */
+}
+
+table tr:hover {
+    background-color: #EEF6FF; /* Azul suave no hover */
+}
+
+/* Responsividade */
+@media screen and (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra reduzida */
+    }
+
+    h1 {
+        font-size: 1.75rem; /* Tamanho ajustado */
+    }
+
+    input, select, button {
+        font-size: 0.9rem; /* Tamanho menor para telas pequenas */
+        padding: 10px;
+    }
+
+    table th, table td {
+        padding: 8px;
+        font-size: 0.85rem; /* Tamanho menor para celular */
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    input, select, button {
+        font-size: 0.85rem;
+        padding: 8px;
+    }
+
+    table {
+        font-size: 0.8rem;
+    }
+
+    table th, table td {
+        padding: 6px;
+    }
+}
