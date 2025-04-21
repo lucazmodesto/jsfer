@@ -164,39 +164,45 @@
   </div>
 
   <!-- Script de alternância -->
-  <script>
+<script>
     let menuAberto = true;
 
     function toggleMenu() {
-      const sidebar = document.getElementById('sidebar');
-      const toggleBtn = document.querySelector('.toggle-btn');
-      const toggleIcon = toggleBtn.querySelector('i');
+        const sidebar = document.querySelector('.sidebar');
+        const iframe = document.querySelector('iframe');
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const toggleIcon = toggleBtn.querySelector('i');
 
-      menuAberto = !menuAberto;
+        if (menuAberto) {
+            sidebar.style.width = '0';
+            iframe.style.marginLeft = '0';
+            toggleBtn.style.left = '0';
+            toggleIcon.classList.remove('fa-angle-left');
+            toggleIcon.classList.add('fa-angle-right');
+        } else {
+            sidebar.style.width = window.innerWidth <= 480 ? '100%' : '250px';
+            iframe.style.marginLeft = window.innerWidth <= 480 ? '0' : '250px';
+            toggleBtn.style.left = window.innerWidth <= 480 ? '0' : '250px';
+            toggleIcon.classList.remove('fa-angle-right');
+            toggleIcon.classList.add('fa-angle-left');
+        }
 
-      if (!menuAberto) {
-        sidebar.classList.add('hidden');
-        toggleIcon.classList.remove('fa-angle-left');
-        toggleIcon.classList.add('fa-angle-right');
-        toggleBtn.style.left = '0';
-      } else {
-        sidebar.classList.remove('hidden');
-        toggleIcon.classList.remove('fa-angle-right');
-        toggleIcon.classList.add('fa-angle-left');
-        toggleBtn.style.left = window.innerWidth <= 768 ? '200px' : '250px';
-      }
+        menuAberto = !menuAberto;
     }
 
-    // Ajustar botão ao redimensionar janela
-    window.addEventListener('resize', () => {
-      const toggleBtn = document.querySelector('.toggle-btn');
-      if (menuAberto) {
-        toggleBtn.style.left = window.innerWidth <= 768 ? '200px' : '250px';
-      } else {
-        toggleBtn.style.left = '0';
-      }
+    // Fecha o menu ao clicar em um item no menu em telas pequenas
+    document.addEventListener("DOMContentLoaded", function () {
+        const links = document.querySelectorAll(".sidebar a");
+        links.forEach(link => {
+            link.addEventListener("click", () => {
+                if (window.innerWidth <= 768 && menuAberto) {
+                    toggleMenu();
+                }
+            });
+        });
     });
-  </script>
+</script>
+
 
 </body>
 </html>
