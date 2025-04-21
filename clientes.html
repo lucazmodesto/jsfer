@@ -417,7 +417,7 @@
                     
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
-                        <td>${String(orcamento.numero || 0).padStart(2, "0")}</td>
+                        <td>${doc.id.substring(0, 8)}...</td>
                         <td>${dataFormatada}</td>
                         <td>R$ ${orcamento.totalGeral.toFixed(2)}</td>
                         <td class="status-${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</td>
@@ -452,92 +452,181 @@
             }
         }
 
-        // Função para exibir detalhes do orçamento no modal
-        async function exibirDetalhesOrcamento(orcamentoId) {
-            try {
-                const docRef = doc(db, "orcamentos", orcamentoId);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    const orcamento = docSnap.data();
-                    const cliente = clienteSelecionado || await getClienteById(orcamento.clienteId);
-                    
-                    modalTitulo.textContent = `Orçamento #${orcamentoId.substring(0, 8)}... - ${cliente.empresa}`;
-                    
-                    let html = `
-                        <p><strong>Cliente:</strong> ${cliente.empresa} (${cliente.comprador})</p>
-                        <p><strong>Data:</strong> ${new Date(orcamento.dataCriacao).toLocaleDateString()}</p>
-                        <p><strong>Status:</strong> <span class="status-${orcamento.status || 'pendente'}">${(orcamento.status || 'pendente').charAt(0).toUpperCase() + (orcamento.status || 'pendente').slice(1)}</span></p>
-                        <p><strong>Total:</strong> R$ ${orcamento.totalGeral.toFixed(2)}</p>
-                        
-                        <h3>Itens do Orçamento</h3>
-                        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                            <thead>
-                                <tr>
-                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
-                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrição</th>
-                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Qtd.</th>
-                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Preço Unit.</th>
-                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-                    
-                    orcamento.itens.forEach(item => {
-                        html += `
-                            <tr>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${item.item}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${item.descricao}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">${item.quantidade}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">R$ ${item.precoUnitario.toFixed(2)}</td>
-                                <td style="border: 1px solid #ddd; padding: 8px;">R$ ${item.subtotal.toFixed(2)}</td>
-                            </tr>
-                        `;
-                    });
-                    
-                    html += `
-                            </tbody>
-                        </table>
-                        
-                        <div style="margin-top: 20px;">
-                            <p><strong>Prazo de Entrega:</strong> ${orcamento.prazoEntrega ? new Date(orcamento.prazoEntrega).toLocaleDateString() : 'Não definido'}</p>
-                            <p><strong>Prazo de Pagamento:</strong> ${orcamento.prazoPagamento ? new Date(orcamento.prazoPagamento).toLocaleDateString() : 'Não definido'}</p>
-                        </div>
-                        
-                        <div style="margin-top: 20px; display: flex; gap: 10px;">
-                            <button class="btn-editar" onclick="window.location.href='telaorcamento.html?orcamentoId=${orcamentoId}'">Editar Orçamento</button>
-                            <button id="btn-aprovar" class="btn-aprovar" data-orcamento-id="${orcamentoId}">Marcar como Aprovado</button>
-                            <button id="btn-finalizar" class="btn-finalizar" data-orcamento-id="${orcamentoId}">Marcar como Finalizado</button>
-                        </div>
-                    `;
-                    
-                    modalConteudo.innerHTML = html;
-                    modal.style.display = "block";
-                    
-                    // Adiciona eventos aos botões do modal
-                    if (document.getElementById("btn-aprovar")) {
-                        document.getElementById("btn-aprovar").addEventListener("click", async () => {
-                            await atualizarStatusOrcamento(orcamentoId, "aprovado");
-                        });
-                    }
-                    
-                    if (document.getElementById("btn-finalizar")) {
-                        document.getElementById("btn-finalizar").addEventListener("click", async () => {
-                            await atualizarStatusOrcamento(orcamentoId, "finalizado");
-                        });
-                    }
-                } else {
-                    modalConteudo.innerHTML = "<p>Orçamento não encontrado.</p>";
-                    modal.style.display = "block";
-                }
-            } catch (error) {
-                console.error("Erro ao carregar detalhes do orçamento:", error);
-                modalConteudo.innerHTML = "<p>Erro ao carregar os detalhes do orçamento.</p>";
-                modal.style.display = "block";
-            }
+async function exibirDetalhesOrcamento(orcamentoId) {
+    try {
+        // Mostra estado de carregamento
+        modalConteudo.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <p>Carregando detalhes do orçamento...</p>
+                <div class="spinner"></div>
+            </div>
+        `;
+        modal.style.display = "block";
+
+        console.log("[DEBUG] Buscando orçamento ID:", orcamentoId);
+        const docRef = doc(db, "orcamentos", orcamentoId);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            throw new Error(`Orçamento com ID ${orcamentoId} não encontrado no banco de dados`);
         }
 
+        const orcamento = docSnap.data();
+        console.log("[DEBUG] Dados do orçamento:", orcamento);
+        
+        // Verificação de campos obrigatórios
+        if (!orcamento.clienteId) {
+            throw new Error("Campo 'clienteId' não encontrado no orçamento");
+        }
+
+        if (!orcamento.itens || !Array.isArray(orcamento.itens)) {
+            console.warn("Itens do orçamento não encontrados ou não é um array");
+            orcamento.itens = [];
+        }
+
+        // Busca informações do cliente
+        let cliente;
+        try {
+            cliente = clienteSelecionado || await getClienteById(orcamento.clienteId);
+            console.log("[DEBUG] Dados do cliente:", cliente);
+        } catch (error) {
+            console.error("Erro ao buscar cliente:", error);
+            cliente = {
+                empresa: "Cliente não encontrado",
+                comprador: "",
+                telefone: "",
+                email: ""
+            };
+        }
+
+        // Formatação de datas com verificação
+        const formatDate = (date) => {
+            if (!date) return "Não definido";
+            try {
+                return new Date(date).toLocaleDateString('pt-BR');
+            } catch (e) {
+                console.warn("Erro ao formatar data:", date, e);
+                return "Data inválida";
+            }
+        };
+
+        // Formatação monetária segura
+        const formatMoney = (value) => {
+            const num = Number(value || 0);
+            return isNaN(num) ? "R$ 0,00" : `R$ ${num.toFixed(2).replace('.', ',')}`;
+        };
+
+        // Status com classe CSS
+        const status = orcamento.status || 'pendente';
+        const statusDisplay = status.charAt(0).toUpperCase() + status.slice(1);
+
+        // Construção do HTML
+        modalTitulo.textContent = `Orçamento #${String(orcamento.numero || 'N/A').padStart(3, '0')} - ${cliente.empresa}`;
+        
+        let html = `
+            <div class="orcamento-header">
+                <p><strong>Cliente:</strong> ${cliente.empresa} (${cliente.comprador})</p>
+                <p><strong>Contato:</strong> ${cliente.telefone || 'Sem telefone'} | ${cliente.email || 'Sem e-mail'}</p>
+                <p><strong>Data:</strong> ${formatDate(orcamento.dataCriacao)}</p>
+                <p><strong>Status:</strong> <span class="status-${status}">${statusDisplay}</span></p>
+                <p><strong>Total:</strong> ${formatMoney(orcamento.totalGeral)}</p>
+            </div>
+
+            <h3>Itens do Orçamento</h3>
+            <div class="table-container">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Descrição</th>
+                            <th>Qtd.</th>
+                            <th>Preço Unit.</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        // Processamento dos itens
+        if (orcamento.itens.length > 0) {
+            orcamento.itens.forEach((item, index) => {
+                html += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${item.descricao || 'Sem descrição'}</td>
+                        <td>${item.quantidade || 0}</td>
+                        <td>${formatMoney(item.precoUnitario)}</td>
+                        <td>${formatMoney(item.subtotal)}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            html += `
+                <tr>
+                    <td colspan="5" style="text-align: center;">Nenhum item encontrado neste orçamento</td>
+                </tr>
+            `;
+        }
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="orcamento-footer">
+                <div class="dates-info">
+                    <p><strong>Prazo de Entrega:</strong> ${formatDate(orcamento.prazoEntrega)}</p>
+                    <p><strong>Prazo de Pagamento:</strong> ${formatDate(orcamento.prazoPagamento)}</p>
+                    ${orcamento.observacoes ? `<p><strong>Observações:</strong> ${orcamento.observacoes}</p>` : ''}
+                </div>
+
+                <div class="actions-buttons">
+                    <button class="btn-editar" onclick="window.location.href='telaorcamento.html?orcamentoId=${orcamentoId}'">
+                        Editar Orçamento
+                    </button>
+                    ${status !== 'aprovado' ? `
+                    <button id="btn-aprovar" class="btn-aprovar" data-orcamento-id="${orcamentoId}">
+                        Marcar como Aprovado
+                    </button>
+                    ` : ''}
+                    ${status !== 'finalizado' ? `
+                    <button id="btn-finalizar" class="btn-finalizar" data-orcamento-id="${orcamentoId}">
+                        Marcar como Finalizado
+                    </button>
+                    ` : ''}
+                    <button id="btn-imprimir" class="btn-imprimir" onclick="window.print()">
+                        Imprimir Orçamento
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modalConteudo.innerHTML = html;
+        
+        // Adiciona eventos aos botões dinâmicos
+        if (document.getElementById("btn-aprovar")) {
+            document.getElementById("btn-aprovar").addEventListener("click", async () => {
+                await atualizarStatusOrcamento(orcamentoId, "aprovado");
+            });
+        }
+        
+        if (document.getElementById("btn-finalizar")) {
+            document.getElementById("btn-finalizar").addEventListener("click", async () => {
+                await atualizarStatusOrcamento(orcamentoId, "finalizado");
+            });
+        }
+
+    } catch (error) {
+        console.error("[ERRO] Falha ao exibir detalhes do orçamento:", error);
+        modalConteudo.innerHTML = `
+            <div class="error-message">
+                <h3>Erro ao carregar orçamento</h3>
+                <p>${error.message}</p>
+                <button onclick="window.location.reload()">Recarregar Página</button>
+            </div>
+        `;
+    }
+}
         // Função auxiliar para obter cliente por ID
         async function getClienteById(clienteId) {
             try {
