@@ -349,22 +349,29 @@
             border-left: 4px solid #f44336;
         }
 
+        /* Estilos dos botões de ação */
         .payment-actions {
             display: flex;
             gap: 8px;
             margin-top: 12px;
         }
 
-        .btn-pago {
-            background: #4CAF50;
-            color: white;
+        .payment-actions button {
             border: none;
             padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             flex: 1;
-            transition: background 0.2s;
+        }
+
+        .btn-pago {
+            background: #4CAF50;
+            color: white;
         }
 
         .btn-pago:hover {
@@ -374,17 +381,34 @@
         .btn-whatsapp {
             background: #25D366;
             color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            flex: 1;
-            transition: background 0.2s;
         }
 
         .btn-whatsapp:hover {
             background: #1da851;
+        }
+
+        .btn-editar {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-editar:hover {
+            background: #2563eb;
+        }
+
+        .btn-excluir {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-excluir:hover {
+            background: #dc2626;
+        }
+
+        /* Ícones nos botões */
+        .payment-actions button i {
+            margin-right: 5px;
+            font-size: 0.9em;
         }
 
         /* Responsividade para mobile */
@@ -482,12 +506,14 @@
                 gap: 6px;
             }
 
-            .btn-pago, .btn-whatsapp {
+            .payment-actions button {
                 width: 100%;
                 padding: 10px;
             }
         }
     </style>
+    <!-- Adicionando Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -524,9 +550,8 @@
         
         <button class="add-payment" id="open-modal">+ Adicionar Recebimento</button>
         <button id="btn-demonstrativo" style="margin-top:10px; background:#1e293b; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:600; cursor:pointer; width:100%;">
-    📊 Gerar Demonstrativo do Mês
-</button>
-
+            📊 Gerar Demonstrativo do Mês
+        </button>
     </div>
     
     <!-- Modal para adicionar recebimento -->
@@ -552,7 +577,6 @@
                     <button type="button" class="cancel-btn" id="cancel-payment">Cancelar</button>
                     <button type="submit" class="save-btn">Salvar</button>
                 </div>
-
             </form>
         </div>
     </div>
@@ -571,6 +595,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        import { deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
@@ -606,14 +631,11 @@
         const closeDayDetailsBtn = document.getElementById('close-day-details');
 
         // Função para corrigir o problema de data
-// Função para corrigir o problema de data
-function ajustarDataParaFirestore(dataString) {
-    if (!dataString) return null;
-    
-    // Simplesmente retorna a data no formato YYYY-MM-DD
-    // O Firestore irá interpretar isso corretamente como data local
-    return dataString;
-}
+        function ajustarDataParaFirestore(dataString) {
+            if (!dataString) return null;
+            return dataString;
+        }
+
         // Função para exibir data formatada
         function formatarDataExibicao(dataString) {
             if (!dataString) return '';
@@ -647,11 +669,18 @@ function ajustarDataParaFirestore(dataString) {
             cancelModalBtn.addEventListener('click', () => {
                 modal.style.display = 'none';
                 paymentForm.reset();
+                paymentForm.removeAttribute('data-editar-id');
+                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento';
             });
             
             paymentForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await adicionarPagamento();
+                const editingId = paymentForm.getAttribute('data-editar-id');
+                if (editingId) {
+                    await salvarEdicao(editingId);
+                } else {
+                    await adicionarPagamento();
+                }
             });
             
             closeDayDetailsBtn.addEventListener('click', () => {
@@ -689,41 +718,41 @@ function ajustarDataParaFirestore(dataString) {
             }
         }
 
-       async function carregarPagamentos() {
-    try {
-        // Consulta ordenada por dataPagamento
-        const q = query(collection(db, "recebimentos"), orderBy("dataPagamento"));
-        const querySnapshot = await getDocs(q);
-        payments = [];
-        
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            
-            // Garante que a dataPagamento existe e está no formato correto
-            if (!data.dataPagamento) {
-                console.warn("Recebimento sem data:", doc.id);
-                return;
+        async function carregarPagamentos() {
+            try {
+                // Consulta ordenada por dataPagamento
+                const q = query(collection(db, "recebimentos"), orderBy("dataPagamento"));
+                const querySnapshot = await getDocs(q);
+                payments = [];
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    
+                    // Garante que a dataPagamento existe e está no formato correto
+                    if (!data.dataPagamento) {
+                        console.warn("Recebimento sem data:", doc.id);
+                        return;
+                    }
+                    
+                    payments.push({
+                        id: doc.id,
+                        descricao: data.descricao || "",
+                        valor: data.valor || 0,
+                        dataPagamento: data.dataPagamento,
+                        clienteId: data.clienteId || null,
+                        clienteNome: data.clienteNome || null,
+                        telefone: data.telefone || null,
+                        pago: data.pago || false
+                    });
+                });
+                
+                atualizarCalendario();
+                atualizarResumo();
+            } catch (error) {
+                console.error("Erro ao carregar recebimentos:", error);
+                alert("Erro ao carregar recebimentos. Verifique o console para detalhes.");
             }
-            
-            payments.push({
-                id: doc.id,
-                descricao: data.descricao || "",
-                valor: data.valor || 0,
-                dataPagamento: data.dataPagamento,
-                clienteId: data.clienteId || null,
-                clienteNome: data.clienteNome || null,
-                telefone: data.telefone || null,
-                pago: data.pago || false
-            });
-        });
-        
-        atualizarCalendario();
-        atualizarResumo();
-    } catch (error) {
-        console.error("Erro ao carregar recebimentos:", error);
-        alert("Erro ao carregar recebimentos. Verifique o console para detalhes.");
-    }
-}
+        }
 
         // Adiciona novo pagamento
         async function adicionarPagamento() {
@@ -848,10 +877,7 @@ function ajustarDataParaFirestore(dataString) {
             for (let i = 0; i < remainingCells; i++) {
                 calendarDays.appendChild(criarDiaVazio());
             }
-            atualizarResumo();
-
         }
-
 
         // Cria dia vazio
         function criarDiaVazio() {
@@ -895,8 +921,20 @@ function ajustarDataParaFirestore(dataString) {
                         
                         <div class="payment-actions">
                             ${!payment.pago ? `
-                                <button class="btn-pago" onclick="marcarComoPago('${payment.id}')">Marcar como Pago</button>
-                                ${payment.telefone ? `<button class="btn-whatsapp" onclick="cobrarViaWhatsapp(${JSON.stringify(payment).replace(/"/g, '&quot;')})">WhatsApp</button>` : ''}
+                                <button class="btn-pago" onclick="marcarComoPago('${payment.id}')">
+                                    <i class="fas fa-check-circle"></i> Pago
+                                </button>
+                                <button class="btn-editar" onclick="editarPagamento('${payment.id}')">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn-excluir" onclick="excluirPagamento('${payment.id}')">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </button>
+                                ${payment.telefone ? `
+                                    <button class="btn-whatsapp" onclick="cobrarViaWhatsapp(${JSON.stringify(payment).replace(/"/g, '&quot;')})">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
+                                    </button>
+                                ` : ''}
                             ` : ''}
                         </div>
                     `;
@@ -924,6 +962,87 @@ function ajustarDataParaFirestore(dataString) {
             }
         }
 
+        // Excluir recebimento
+        window.excluirPagamento = async function(paymentId) {
+            if (confirm("Tem certeza que deseja excluir este recebimento?")) {
+                try {
+                    await deleteDoc(doc(db, "recebimentos", paymentId));
+                    await carregarPagamentos();
+                    dayDetailsModal.style.display = 'none';
+                } catch (error) {
+                    console.error("Erro ao excluir recebimento:", error);
+                    alert("Erro ao excluir");
+                }
+            }
+        }
+
+        // Editar recebimento
+        window.editarPagamento = function(paymentId) {
+            const pagamento = payments.find(p => p.id === paymentId);
+            if (!pagamento) return;
+
+            // Preenche o formulário com os dados do pagamento selecionado
+            document.getElementById('descricao').value = pagamento.descricao;
+            document.getElementById('valor').value = pagamento.valor;
+            document.getElementById('data-pagamento').value = pagamento.dataPagamento;
+
+            // Se houver cliente associado, seleciona ele no <select>
+            const clienteSelect = document.getElementById('cliente');
+            if (pagamento.clienteId) {
+                for (let option of clienteSelect.options) {
+                    if (option.value && JSON.parse(option.value).id === pagamento.clienteId) {
+                        clienteSelect.value = option.value;
+                        break;
+                    }
+                }
+            } else {
+                clienteSelect.value = '';
+            }
+
+            // Altera o título do modal para "Editar Recebimento"
+            document.querySelector('#payment-modal h2').textContent = 'Editar Recebimento';
+            
+            // Marca o ID que está sendo editado
+            paymentForm.setAttribute('data-editar-id', paymentId);
+            
+            // Exibe o modal
+            modal.style.display = 'flex';
+        };
+
+        async function salvarEdicao(id) {
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const dataPagamento = ajustarDataParaFirestore(document.getElementById('data-pagamento').value);
+            const clienteSelect = document.getElementById('cliente');
+            const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
+
+            if (!descricao || isNaN(valor) || !dataPagamento) {
+                alert("Preencha todos os campos corretamente.");
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, "recebimentos", id), {
+                    descricao,
+                    valor,
+                    dataPagamento,
+                    clienteId: clienteSelecionado?.id || null,
+                    clienteNome: clienteSelecionado?.nome || null,
+                    telefone: clienteSelecionado?.telefone || null
+                });
+
+                modal.style.display = 'none';
+                paymentForm.reset();
+                paymentForm.removeAttribute('data-editar-id');
+                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento';
+                await carregarPagamentos();
+                alert("Recebimento atualizado com sucesso!");
+            } catch (error) {
+                console.error("Erro ao editar:", error);
+                alert("Erro ao salvar edição.");
+            }
+        }
+
         // Cobrar via WhatsApp
         window.cobrarViaWhatsapp = function(payment) {
             const mensagem = `Olá! Este é um lembrete sobre o vencimento de "${payment.descricao}".\nValor: R$ ${payment.valor.toFixed(2)}\nVencimento: ${formatarDataExibicao(payment.dataPagamento)}\nPor favor, entre em contato para mais detalhes.`;
@@ -932,29 +1051,23 @@ function ajustarDataParaFirestore(dataString) {
         }
 
         // Atualiza resumo financeiro
-    function atualizarResumo() {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-
-    let totalPendente = 0;
-    let totalRecebido = 0;
-
-    payments.forEach(payment => {
-        const [ano, mes] = payment.dataPagamento.split('-').map(Number);
-        if (ano === year && mes === month) {
-            if (payment.pago) {
-                totalRecebido += payment.valor;
-            } else {
-                totalPendente += payment.valor;
-            }
+        function atualizarResumo() {
+            let totalPendente = 0;
+            let totalRecebido = 0;
+            
+            payments.forEach(payment => {
+                if (payment.pago) {
+                    totalRecebido += payment.valor;
+                } else {
+                    totalPendente += payment.valor;
+                }
+            });
+            
+            totalPendenteElement.textContent = `R$ ${totalPendente.toFixed(2)}`;
+            totalRecebidoElement.textContent = `R$ ${totalRecebido.toFixed(2)}`;
         }
-    });
 
-    totalPendenteElement.textContent = `R$ ${totalPendente.toFixed(2)}`;
-    totalRecebidoElement.textContent = `R$ ${totalRecebido.toFixed(2)}`;
-}
-
-
+        // Retorna nome do mês
         function getMonthName(month) {
             const months = [
                 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -962,53 +1075,6 @@ function ajustarDataParaFirestore(dataString) {
             ];
             return months[month];
         }
-        // Ação do botão demonstrativo
-document.getElementById('btn-demonstrativo').addEventListener('click', () => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth() + 1;
-
-    const pagamentosDoMes = payments.filter(p => {
-        const [ano, mes] = p.dataPagamento.split('-').map(Number);
-        return ano === year && mes === month;
-    });
-
-    let html = '';
-
-    const recebidos = pagamentosDoMes.filter(p => p.pago);
-    const pendentes = pagamentosDoMes.filter(p => !p.pago);
-
-    if (recebidos.length > 0) {
-        html += '<h3 style="color:green;">Recebidos</h3><ul>';
-        recebidos.forEach(p => {
-            html += `<li><strong>${p.descricao}</strong> - R$ ${p.valor.toFixed(2)} (${formatarDataExibicao(p.dataPagamento)})</li>`;
-        });
-        html += '</ul>';
-    }
-
-    if (pendentes.length > 0) {
-        html += '<h3 style="color:#eab308;">A Receber</h3><ul>';
-        pendentes.forEach(p => {
-            html += `<li><strong>${p.descricao}</strong> - R$ ${p.valor.toFixed(2)} (${formatarDataExibicao(p.dataPagamento)})</li>`;
-        });
-        html += '</ul>';
-    }
-
-    if (html === '') {
-        html = '<p style="color:#64748b;">Nenhum lançamento neste mês.</p>';
-    }
-
-    document.getElementById('lista-demonstrativo').innerHTML = html;
-    document.getElementById('modal-demonstrativo').style.display = 'flex';
-});
-
     </script>
-    <div class="modal" id="modal-demonstrativo" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
-    <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:600px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-height:80vh; overflow-y:auto;">
-        <h2>Demonstrativo do Mês</h2>
-        <div id="lista-demonstrativo" style="margin:15px 0;"></div>
-        <button onclick="document.getElementById('modal-demonstrativo').style.display='none'" style="background:#f44336;color:white;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;width:100%;">Fechar</button>
-    </div>
-</div>
-
 </body>
 </html>>
