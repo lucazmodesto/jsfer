@@ -6,10 +6,10 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Estilo geral do body */
+/* Estilo do body */
 body {
-    background-color: #F7F8FA; /* Fundo claro e limpo */
-    color: #2F2F2F; /* Texto escuro e sofisticado */
+    background-color: #F9FAFB;
+    color: #2F2F2F;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -19,22 +19,23 @@ body {
 
 /* Container principal */
 .container {
-    width: 90%;
+    width: 100%;
     max-width: 900px;
-    background: #FFFFFF; /* Fundo branco puro */
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra refinada */
+    background: #FFFFFF;
+    padding: 24px;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
     text-align: center;
-    border: 1px solid #E0E0E0; /* Borda leve e profissional */
+    border: 1px solid #E5E7EB;
+    transition: all 0.3s ease-in-out;
 }
 
-/* Título principal */
+/* Título */
 h1 {
     font-size: 2rem;
-    color: #3A3A3A; /* Cinza premium */
+    color: #1F2937;
     margin-bottom: 20px;
-    font-weight: bold;
+    font-weight: 700;
 }
 
 /* Formulário */
@@ -44,119 +45,136 @@ form {
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 label {
     font-size: 1rem;
     font-weight: 600;
-    color: #3A3A3A;
-    margin-bottom: 5px;
+    color: #374151;
+    margin-bottom: 6px;
     display: block;
 }
 
-input, select {
+input,
+select {
     width: 100%;
     padding: 12px;
-    border: 1px solid #D1D1D1; /* Bordas refinadas */
-    border-radius: 8px;
+    border: 1px solid #D1D5DB;
+    border-radius: 10px;
     font-size: 1rem;
-    background-color: #F9F9F9;
+    background-color: #F9FAFB;
     transition: all 0.3s ease;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
     outline: none;
-    border-color: #5A9EDB; /* Destaque azul corporativo */
-    box-shadow: 0 0 6px rgba(90, 158, 219, 0.4);
+    border-color: #3B82F6;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
 }
 
 /* Botão */
 button {
-    background-color: #5A9EDB; /* Azul corporativo elegante */
-    color: #FFFFFF;
+    background-color: #3B82F6;
+    color: white;
     font-weight: 600;
     font-size: 1rem;
-    padding: 12px 20px;
+    padding: 12px 24px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.3s ease;
+    width: 100%;
+    margin-top: 10px;
 }
 
 button:hover {
-    background-color: #497FB5; /* Azul mais escuro */
+    background-color: #2563EB;
 }
 
 /* Tabela */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 25px;
-    font-size: 0.9rem;
+    margin-top: 30px;
+    font-size: 0.95rem;
 }
 
-table th, table td {
+th,
+td {
     text-align: left;
-    padding: 10px;
-    border: 1px solid #E0E0E0; /* Linhas refinadas */
+    padding: 12px;
+    border: 1px solid #E5E7EB;
 }
 
-table th {
-    background-color: #F5F5F5; /* Cinza claro */
-    color: #2F2F2F;
-    font-weight: bold;
+th {
+    background-color: #F3F4F6;
+    color: #111827;
+    font-weight: 700;
     text-transform: uppercase;
 }
 
-table tr:nth-child(even) {
-    background-color: #FAFAFA; /* Linhas alternadas */
+tr:nth-child(even) {
+    background-color: #FAFAFA;
 }
 
-table tr:hover {
-    background-color: #EEF6FF; /* Azul suave no hover */
+tr:hover {
+    background-color: #EFF6FF;
 }
 
 /* Responsividade */
-@media screen and (max-width: 768px) {
+@media (max-width: 768px) {
     .container {
-        width: 95%;
         padding: 20px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Sombra reduzida */
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
     }
 
     h1 {
-        font-size: 1.75rem; /* Tamanho ajustado */
+        font-size: 1.6rem;
     }
 
-    input, select, button {
-        font-size: 0.9rem; /* Tamanho menor para telas pequenas */
-        padding: 10px;
-    }
-
-    table th, table td {
-        padding: 8px;
-        font-size: 0.85rem; /* Tamanho menor para celular */
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .container {
-        padding: 15px;
-    }
-
-    h1 {
-        font-size: 1.5rem;
-    }
-
-    input, select, button {
-        font-size: 0.85rem;
-        padding: 8px;
+    input,
+    select,
+    button {
+        font-size: 0.95rem;
+        padding: 10px 14px;
     }
 
     table {
+        font-size: 0.85rem;
+    }
+
+    th,
+    td {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.4rem;
+    }
+
+    .container {
+        padding: 16px;
+    }
+
+    input,
+    select,
+    button {
+        font-size: 0.9rem;
+        padding: 9px 12px;
+    }
+
+    th,
+    td {
+        padding: 6px;
         font-size: 0.8rem;
     }
+}
+
 
     table th, table td {
         padding: 6px;
