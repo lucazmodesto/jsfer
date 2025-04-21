@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boss - Gestao empresarial </title>
-    <!-- Link para Font Awesome (Cloudflare CDN) -->
+    <title>Boss - Gestão Empresarial</title>
+    <!-- Font Awesome para os ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="css/menu.css">
-    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
 
     <style>
         /* Estilo do iframe que carrega o conteúdo */
         iframe {
-            width: calc(100% - 250px); /* Compensa a largura do menu lateral */
+            width: calc(100% - 250px);
             height: 100vh;
             border: none;
-            margin-left: 250px; /* Alinha ao lado do menu */
+            margin-left: 250px;
+            transition: margin-left 0.3s ease;
         }
 
         /* Estilo da barra lateral */
@@ -25,14 +24,14 @@
             position: fixed;
             top: 0;
             left: 0;
-            background-color: #1E1E2E; /* Cinza escuro */
+            background-color: #1E1E2E;
             color: #E4E4E7;
             padding-top: 20px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
+            transition: width 0.3s ease;
         }
 
-        /* Estilo do logo */
         .logo {
             display: flex;
             justify-content: center;
@@ -45,7 +44,7 @@
         .logo img {
             max-width: 80%;
             height: auto;
-            border-radius: 8px; /* Bordas suaves */
+            border-radius: 8px;
         }
 
         .sidebar a {
@@ -61,30 +60,52 @@
 
         .sidebar a i {
             margin-right: 10px;
-            font-size: 20px; /* Tamanho dos ícones */
+            font-size: 20px;
         }
 
         .sidebar a:hover {
-            background-color: #4CAF50; /* Verde claro */
+            background-color: #4CAF50;
             color: #FFFFFF;
+        }
+
+        /* Botão de alternância do menu */
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 250px;
+            z-index: 1000;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            transition: left 0.3s ease;
+        }
+
+        .toggle-btn i {
+            font-size: 18px;
         }
 
         @media screen and (max-width: 768px) {
             .sidebar {
-                width: 200px; /* Ajusta largura em telas menores */
+                width: 200px;
             }
 
             iframe {
-                margin-left: 200px; /* Ajusta iframe para largura menor */
+                margin-left: 200px;
             }
 
             .sidebar a {
-                font-size: 14px; /* Reduz tamanho do texto */
-                padding: 10px 15px; /* Links mais compactos */
+                font-size: 14px;
+                padding: 10px 15px;
             }
 
             .logo img {
-                max-width: 70%; /* Reduz tamanho do logo */
+                max-width: 70%;
+            }
+
+            .toggle-btn {
+                left: 200px;
             }
         }
 
@@ -92,23 +113,34 @@
             .sidebar {
                 width: 100%;
                 position: relative;
-                height: auto; /* Ajusta altura para telas muito pequenas */
+                height: auto;
             }
 
             iframe {
-                margin: 0; /* Remove margem do iframe */
+                margin: 0;
+                width: 100%;
             }
 
             .logo img {
-                max-width: 60%; /* Ajusta logo para telas muito pequenas */
+                max-width: 60%;
+            }
+
+            .toggle-btn {
+                left: 0;
+                top: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Menu Principal -->
+
+    <!-- Botão para esconder/mostrar o menu -->
+    <div class="toggle-btn" onclick="toggleMenu()">
+        <i class="fas fa-angle-left"></i>
+    </div>
+
+    <!-- Menu Lateral -->
     <div class="sidebar">
-        <!-- Logo -->
         <div class="logo">
             <img src="img/logo.png" alt="Logo do Programa">
         </div>
@@ -121,7 +153,36 @@
         <a href="calendariopagamentos.html" target="conteudo"><i class="fas fa-calendar-alt"></i>Calendário de Contas a Pagar</a>
     </div>
 
-    <!-- Conteúdo dinâmico -->
+    <!-- Conteúdo principal -->
     <iframe name="conteudo" src="cadastromateriais.html"></iframe>
+
+    <!-- Script para esconder/mostrar menu -->
+    <script>
+        let menuAberto = true;
+
+        function toggleMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const iframe = document.querySelector('iframe');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            const toggleIcon = toggleBtn.querySelector('i');
+
+            if (menuAberto) {
+                sidebar.style.width = '0';
+                iframe.style.marginLeft = '0';
+                toggleBtn.style.left = '0';
+                toggleIcon.classList.remove('fa-angle-left');
+                toggleIcon.classList.add('fa-angle-right');
+            } else {
+                sidebar.style.width = '250px';
+                iframe.style.marginLeft = '250px';
+                toggleBtn.style.left = '250px';
+                toggleIcon.classList.remove('fa-angle-right');
+                toggleIcon.classList.add('fa-angle-left');
+            }
+
+            menuAberto = !menuAberto;
+        }
+    </script>
+
 </body>
 </html>
