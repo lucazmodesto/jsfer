@@ -23,7 +23,8 @@
             </div>
             <div>
                 <label for="telefone">Telefone</label>
-                <input type="tel" id="telefone" placeholder="Digite o telefone" required>
+                <input type="tel" id="telefone" placeholder="+55 (99) 91234-5678" pattern="^\+55\s\(\d{2}\)\s9\d{4}-\d{4}$" required>
+
             </div>
             <div>
                 <label for="comprador">Nome do Comprador</label>
@@ -138,5 +139,27 @@
         // Chamar função ao carregar a página
         window.addEventListener("load", listarClientes);
     </script>
+    <script>
+    document.getElementById("telefone").addEventListener("input", function (e) {
+        let input = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
+
+        if (input.startsWith("55")) {
+            input = input.slice(2);
+        }
+
+        if (input.length > 11) {
+            input = input.slice(0, 11);
+        }
+
+        let formatted = "+55 ";
+        if (input.length > 0) formatted += "(" + input.slice(0, 2);
+        if (input.length >= 2) formatted += ") ";
+        if (input.length >= 3) formatted += input.slice(2, 7);
+        if (input.length >= 7) formatted += "-" + input.slice(7);
+
+        e.target.value = formatted;
+    });
+</script>
+
 </body>
 </html>
