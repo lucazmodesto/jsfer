@@ -29,7 +29,7 @@
             padding-top: 20px;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             overflow-y: auto;
-            transition: width 0.3s ease;
+            transition: left 0.3s ease;
         }
 
         .logo {
@@ -88,31 +88,35 @@
 
         @media screen and (max-width: 768px) {
             .sidebar {
-                width: 200px;
+                position: fixed;
+                left: -250px;
+                top: 0;
+                height: 100%;
+                width: 250px;
+                z-index: 999;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.aberto {
+                left: 0;
             }
 
             iframe {
-                margin-left: 200px;
-            }
-
-            .sidebar a {
-                font-size: 14px;
-                padding: 10px 15px;
-            }
-
-            .logo img {
-                max-width: 70%;
+                width: 100%;
+                margin-left: 0;
             }
 
             .toggle-btn {
-                left: 200px;
+                left: 0;
+                top: 10px;
+                z-index: 1000;
             }
         }
 
         @media screen and (max-width: 480px) {
             .sidebar {
-                width: 100%;
                 position: relative;
+                width: 100%;
                 height: auto;
             }
 
@@ -144,13 +148,13 @@
         <div class="logo">
             <img src="img/logo.png" alt="Logo do Programa">
         </div>
-        <a href="cadastromateriais.html" target="conteudo"><i class="fas fa-tools"></i>Cadastro de Materiais e Serviços</a>
-        <a href="cadastroclientes.html" target="conteudo"><i class="fas fa-user-friends"></i>Cadastro de Clientes</a>
-        <a href="clientes.html" target="conteudo"><i class="fas fa-address-book"></i>Tela do Cliente</a>
-        <a href="telaorcamento.html" target="conteudo"><i class="fas fa-file-invoice-dollar"></i>Tela de Orçamentos</a>
-        <a href="pedidos.html" target="conteudo"><i class="fas fa-shopping-cart"></i>Tela de Pedidos</a>
-        <a href="calendariorecebimentos.html" target="conteudo"><i class="fas fa-calendar-check"></i>Calendário de Recebimentos</a>
-        <a href="calendariopagamentos.html" target="conteudo"><i class="fas fa-calendar-alt"></i>Calendário de Contas a Pagar</a>
+        <a href="cadastromateriais.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-tools"></i>Cadastro de Materiais e Serviços</a>
+        <a href="cadastroclientes.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-user-friends"></i>Cadastro de Clientes</a>
+        <a href="clientes.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-address-book"></i>Tela do Cliente</a>
+        <a href="telaorcamento.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-file-invoice-dollar"></i>Tela de Orçamentos</a>
+        <a href="pedidos.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-shopping-cart"></i>Tela de Pedidos</a>
+        <a href="calendariorecebimentos.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-calendar-check"></i>Calendário de Recebimentos</a>
+        <a href="calendariopagamentos.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-calendar-alt"></i>Calendário de Contas a Pagar</a>
     </div>
 
     <!-- Conteúdo principal -->
@@ -158,29 +162,37 @@
 
     <!-- Script para esconder/mostrar menu -->
     <script>
-        let menuAberto = true;
+        let menuAberto = false;
 
         function toggleMenu() {
             const sidebar = document.querySelector('.sidebar');
-            const iframe = document.querySelector('iframe');
             const toggleBtn = document.querySelector('.toggle-btn');
             const toggleIcon = toggleBtn.querySelector('i');
+            const iframe = document.querySelector('iframe');
 
             if (menuAberto) {
-                sidebar.style.width = '0';
+                sidebar.classList.remove('aberto');
                 iframe.style.marginLeft = '0';
-                toggleBtn.style.left = '0';
                 toggleIcon.classList.remove('fa-angle-left');
                 toggleIcon.classList.add('fa-angle-right');
             } else {
-                sidebar.style.width = '250px';
+                sidebar.classList.add('aberto');
                 iframe.style.marginLeft = '250px';
-                toggleBtn.style.left = '250px';
                 toggleIcon.classList.remove('fa-angle-right');
                 toggleIcon.classList.add('fa-angle-left');
             }
 
             menuAberto = !menuAberto;
+        }
+
+        function fecharMenuSeMobile() {
+            if (window.innerWidth <= 768) {
+                document.querySelector('.sidebar').classList.remove('aberto');
+                document.querySelector('.toggle-btn i').classList.remove('fa-angle-left');
+                document.querySelector('.toggle-btn i').classList.add('fa-angle-right');
+                document.querySelector('iframe').style.marginLeft = '0';
+                menuAberto = false;
+            }
         }
     </script>
 
