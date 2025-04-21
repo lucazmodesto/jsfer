@@ -3,9 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-     <link rel="stylesheet" href="css/cadastromateriais.css">
+    <link rel="stylesheet" href="css/cadastromateriais.css">
     <title>Tela de Orçamentos</title>
+    <style>
+        /* Estilos básicos para melhorar a aparência */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        select, input, button {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        #adicionar-item-nao-cadastrado {
+            background-color: #2196F3;
+        }
+        #adicionar-item-nao-cadastrado:hover {
+            background-color: #0b7dda;
+        }
+        #gerar-pdf {
+            background-color: #f44336;
+        }
+        #gerar-pdf:hover {
+            background-color: #da190b;
+        }
+        #enviar-whatsapp {
+            background-color: #4CAF50;
+        }
+        #enviar-whatsapp:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -64,22 +135,26 @@
         </div>
 
         <!-- Botões -->
-        <div>
+        <div class="actions">
             <button id="salvar-orcamento">Salvar Orçamento</button>
             <button id="gerar-pdf">Gerar PDF</button>
             <button id="enviar-whatsapp">Enviar por WhatsApp</button>
         </div>
     </div>
 
+    <!-- Incluindo jsPDF para geração de PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
+        // Configuração do Firebase (substitua por suas variáveis de ambiente em produção)
         const firebaseConfig = {
             apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
             authDomain: "novojsfer.firebaseapp.com",
             projectId: "novojsfer",
-            storageBucket: "novojsfer.firebasestorage.app",
+            storageBucket: "novojsfer.appspot.com",
             messagingSenderId: "610404413021",
             appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
         };
@@ -87,6 +162,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Carrega clientes do Firebase
         async function carregarClientes() {
             const clienteSelect = document.getElementById("cliente");
             try {
@@ -100,9 +176,11 @@
                 });
             } catch (error) {
                 console.error("Erro ao carregar clientes:", error);
+                alert("Erro ao carregar clientes. Verifique o console.");
             }
         }
 
+        // Carrega itens cadastrados do Firebase
         async function carregarItensCadastrados() {
             const itensSelect = document.getElementById("itens-cadastrados");
             try {
@@ -110,112 +188,310 @@
                 querySnapshot.forEach((doc) => {
                     const item = doc.data();
                     const option = document.createElement("option");
-                    option.value = JSON.stringify({ nome: item.nome, preco: item.preco });
+                    option.value = JSON.stringify({ 
+                        nome: item.nome, 
+                        preco: item.preco,
+                        descricao: item.descricao || ""
+                    });
                     option.textContent = `${item.nome} - R$ ${item.preco.toFixed(2)}`;
                     itensSelect.appendChild(option);
                 });
             } catch (error) {
                 console.error("Erro ao carregar itens cadastrados:", error);
+                alert("Erro ao carregar itens. Verifique o console.");
             }
         }
 
+        // Adiciona item cadastrado à tabela
         document.getElementById("adicionar-item-cadastrado").addEventListener("click", () => {
             const itensSelect = document.getElementById("itens-cadastrados");
             const itemSelecionado = itensSelect.value;
             if (!itemSelecionado) return alert("Selecione um item!");
-            const { nome, preco } = JSON.parse(itemSelecionado);
-            adicionarLinhaTabela(nome, "", 1, preco);
+            
+            const { nome, preco, descricao } = JSON.parse(itemSelecionado);
+            adicionarLinhaTabela(nome, descricao, 1, preco);
         });
 
+        // Adiciona item não cadastrado à tabela
         document.getElementById("adicionar-item-nao-cadastrado").addEventListener("click", () => {
-            adicionarLinhaTabela("Novo Item", "", 1, 0.00);
+            const nomeItem = prompt("Digite o nome do item:");
+            if (nomeItem) {
+                adicionarLinhaTabela(nomeItem, "", 1, 0.00);
+            }
         });
+        import { doc, getDoc, updateDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-        
+let orcamentoId = null;
+let modoEdicao = false;
 
+// Verifica se estamos editando um orçamento
+window.addEventListener("load", async () => {
+    carregarClientes();
+    carregarItensCadastrados();
+
+    const params = new URLSearchParams(window.location.search);
+    orcamentoId = params.get("orcamentoId");
+
+    if (orcamentoId) {
+        modoEdicao = true;
+        const docRef = doc(db, "orcamentos", orcamentoId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const dados = docSnap.data();
+            document.getElementById("prazo-entrega").value = dados.prazoEntrega || "";
+            document.getElementById("prazo-pagamento").value = dados.prazoPagamento || "";
+            document.getElementById("total-geral").textContent = dados.totalGeral.toFixed(2);
+
+            // Seleciona cliente correto
+            const clienteSelect = document.getElementById("cliente");
+            [...clienteSelect.options].forEach(opt => {
+                if (opt.value.includes(dados.clienteId)) {
+                    opt.selected = true;
+                }
+            });
+
+            dados.itens.forEach(item => {
+                adicionarLinhaTabela(item.item, item.descricao, item.quantidade, item.precoUnitario);
+            });
+        }
+    }
+});
+
+
+        // Adiciona nova linha à tabela de orçamento
         function adicionarLinhaTabela(item, descricao, quantidade, precoUnitario) {
             const tabelaBody = document.querySelector("#tabela-orcamento tbody");
             const novaLinha = document.createElement("tr");
+            
             novaLinha.innerHTML = `
                 <td>${item}</td>
                 <td><input type="text" value="${descricao}"></td>
-                <td><input type="number" value="${quantidade}" class="quantidade" onchange="atualizarTotalGeral()"></td>
-                <td><input type="number" value="${precoUnitario}" step="0.01" class="preco-unitario" onchange="atualizarTotalGeral()"></td>
+                <td><input type="number" value="${quantidade}" min="1" class="quantidade"></td>
+                <td><input type="number" value="${precoUnitario.toFixed(2)}" step="0.01" min="0" class="preco-unitario"></td>
                 <td class="subtotal">R$ ${(quantidade * precoUnitario).toFixed(2)}</td>
-                <td><button onclick="removerLinha(this)">Remover</button></td>
+                <td><button class="remover-item">Remover</button></td>
             `;
+            
             tabelaBody.appendChild(novaLinha);
+            
+            // Adiciona eventos para atualizar automaticamente
+            novaLinha.querySelector(".quantidade").addEventListener("change", atualizarTotalGeral);
+            novaLinha.querySelector(".preco-unitario").addEventListener("change", atualizarTotalGeral);
+            novaLinha.querySelector(".remover-item").addEventListener("click", () => {
+                novaLinha.remove();
+                atualizarTotalGeral();
+            });
+            
             atualizarTotalGeral();
         }
 
-        window.removerLinha = function (botao) {
-            botao.parentElement.parentElement.remove();
-            atualizarTotalGeral();
-        };
-
-        window.atualizarTotalGeral = function () {
+        // Atualiza o total geral do orçamento
+        function atualizarTotalGeral() {
             let totalGeral = 0;
             const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
+            
             linhas.forEach((linha) => {
                 const quantidade = parseFloat(linha.querySelector(".quantidade").value) || 0;
                 const precoUnitario = parseFloat(linha.querySelector(".preco-unitario").value) || 0;
                 const subtotal = quantidade * precoUnitario;
+                
                 linha.querySelector(".subtotal").textContent = `R$ ${subtotal.toFixed(2)}`;
                 totalGeral += subtotal;
             });
+            
             document.getElementById("total-geral").textContent = totalGeral.toFixed(2);
-        };
+        }
+document.getElementById("salvar-orcamento").addEventListener("click", async () => {
+    const clienteSelect = document.getElementById("cliente");
+    const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
 
-        document.getElementById("salvar-orcamento").addEventListener("click", async () => {
+    if (!clienteSelecionado) {
+        alert("Selecione um cliente para salvar o orçamento!");
+        return;
+    }
+
+    const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
+    if (linhas.length === 0) {
+        alert("Adicione pelo menos um item ao orçamento!");
+        return;
+    }
+
+    const itens = [];
+    linhas.forEach((linha) => {
+        const item = linha.querySelector("td:first-child").textContent.trim();
+        const descricao = linha.querySelector("td:nth-child(2) input").value.trim();
+        const quantidade = parseFloat(linha.querySelector(".quantidade").value) || 0;
+        const precoUnitario = parseFloat(linha.querySelector(".preco-unitario").value) || 0;
+        const subtotal = quantidade * precoUnitario;
+        
+        itens.push({ item, descricao, quantidade, precoUnitario, subtotal });
+    });
+
+    const prazoEntrega = document.getElementById("prazo-entrega").value;
+    const prazoPagamento = document.getElementById("prazo-pagamento").value;
+    const totalGeral = parseFloat(document.getElementById("total-geral").textContent);
+
+    try {
+        if (modoEdicao) {
+            // Atualizar orçamento existente
+            const orcRef = doc(db, "orcamentos", orcamentoId);
+            await updateDoc(orcRef, {
+                clienteId: clienteSelecionado.id,
+                clienteNome: clienteSelecionado.nome,
+                itens,
+                totalGeral,
+                prazoEntrega,
+                prazoPagamento
+            });
+            alert("Orçamento atualizado com sucesso!");
+        } else {
+            // Buscar todos os orçamentos para determinar o próximo número
+            const querySnapshot = await getDocs(collection(db, "orcamentos"));
+            let maiorNumero = 0;
+
+            querySnapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                if (data.numero && !isNaN(data.numero)) {
+                    maiorNumero = Math.max(maiorNumero, data.numero);
+                }
+            });
+
+            const novoNumero = maiorNumero + 1;
+
+            // Criar novo orçamento com número sequencial
+            await addDoc(collection(db, "orcamentos"), {
+                clienteId: clienteSelecionado.id,
+                clienteNome: clienteSelecionado.nome,
+                itens,
+                totalGeral,
+                prazoEntrega,
+                prazoPagamento,
+                dataCriacao: new Date().toISOString(),
+                status: "pendente",
+                numero: novoNumero
+            });
+
+            alert(`Orçamento Nº ${String(novoNumero).padStart(2, "0")} salvo com sucesso!`);
+            limparFormulario();
+        }
+    } catch (error) {
+        console.error("Erro ao salvar orçamento:", error);
+        alert("Erro ao salvar o orçamento. Verifique o console.");
+    }
+});
+
+        // Gera PDF do orçamento
+        document.getElementById("gerar-pdf").addEventListener("click", () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
             const clienteSelect = document.getElementById("cliente");
-            const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
-
-            if (!clienteSelecionado) {
-                alert("Selecione um cliente para salvar o orçamento!");
-                return;
-            }
-
+            const cliente = clienteSelect.value ? JSON.parse(clienteSelect.value) : { nome: "Cliente não selecionado" };
+            
+            // Cabeçalho
+            doc.setFontSize(18);
+            doc.text("ORÇAMENTO", 105, 15, { align: 'center' });
+            
+            // Informações do cliente
+            doc.setFontSize(12);
+            doc.text(`Cliente: ${cliente.nome}`, 14, 25);
+            doc.text(`Data: ${new Date().toLocaleDateString()}`, 14, 35);
+            
+            // Itens do orçamento
+            doc.text("Itens do Orçamento:", 14, 45);
+            
+            // Cabeçalho da tabela
+            doc.text("Item", 14, 55);
+            doc.text("Descrição", 50, 55);
+            doc.text("Qtd.", 120, 55);
+            doc.text("Preço Unit.", 140, 55);
+            doc.text("Subtotal", 170, 55);
+            
+            // Linhas dos itens
+            let y = 65;
             const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
-            const itens = [];
-
             linhas.forEach((linha) => {
                 const item = linha.querySelector("td:first-child").textContent.trim();
                 const descricao = linha.querySelector("td:nth-child(2) input").value.trim();
-                const quantidade = parseFloat(linha.querySelector(".quantidade").value) || 0;
-                const precoUnitario = parseFloat(linha.querySelector(".preco-unitario").value) || 0;
-                const subtotal = parseFloat(linha.querySelector(".subtotal").textContent.replace("R$", "").trim()) || 0;
-                itens.push({ item, descricao, quantidade, precoUnitario, subtotal });
+                const quantidade = linha.querySelector(".quantidade").value;
+                const precoUnitario = linha.querySelector(".preco-unitario").value;
+                const subtotal = linha.querySelector(".subtotal").textContent;
+                
+                doc.text(item, 14, y);
+                doc.text(descricao.substring(0, 30), 50, y); // Limita a descrição
+                doc.text(quantidade, 120, y);
+                doc.text(`R$ ${parseFloat(precoUnitario).toFixed(2)}`, 140, y);
+                doc.text(subtotal, 170, y);
+                
+                y += 10;
+                if (y > 280) { // Quebra de página se necessário
+                    doc.addPage();
+                    y = 20;
+                }
             });
-
+            
+            // Total
+            doc.setFontSize(14);
+            doc.text(`Total Geral: R$ ${document.getElementById("total-geral").textContent}`, 14, y + 10);
+            
+            // Prazo
             const prazoEntrega = document.getElementById("prazo-entrega").value;
-            const prazoPagamento = document.getElementById("prazo-pagamento").value;
-            const totalGeral = document.getElementById("total-geral").textContent;
-
-            try {
-                await addDoc(collection(db, "orcamentos"), {
-                    clienteId: clienteSelecionado.id,
-                    clienteNome: clienteSelecionado.nome,
-                    itens,
-                    totalGeral,
-                    prazoEntrega,
-                    prazoPagamento,
-                                    });
-
-                alert("Orçamento salvo com sucesso!");
-
-                // Limpa o formulário após salvar
-                document.getElementById("cliente").value = "";
-                document.querySelector("#tabela-orcamento tbody").innerHTML = "";
-                document.getElementById("total-geral").textContent = "0.00";
-                document.getElementById("prazo-entrega").value = "";
-                document.getElementById("prazo-pagamento").value = "";
-            } catch (error) {
-                console.error("Erro ao salvar orçamento:", error);
-                alert("Erro ao salvar o orçamento. Verifique o console.");
+            if (prazoEntrega) {
+                doc.text(`Prazo de Entrega: ${new Date(prazoEntrega).toLocaleDateString()}`, 14, y + 20);
             }
+            
+            // Salva o PDF
+            doc.save(`Orçamento_${cliente.nome.replace(/ /g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
         });
 
-        // Carregar dados ao iniciar
+        // Envia orçamento por WhatsApp
+        document.getElementById("enviar-whatsapp").addEventListener("click", () => {
+            const clienteSelect = document.getElementById("cliente");
+            const cliente = clienteSelect.value ? JSON.parse(clienteSelect.value) : { nome: "Cliente não selecionado" };
+            
+            let mensagem = `*ORÇAMENTO PARA ${cliente.nome.toUpperCase()}*\n\n`;
+            mensagem += `*Data:* ${new Date().toLocaleDateString()}\n\n`;
+            mensagem += "*ITENS:*\n";
+            
+            const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
+            linhas.forEach((linha) => {
+                const item = linha.querySelector("td:first-child").textContent.trim();
+                const quantidade = linha.querySelector(".quantidade").value;
+                const precoUnitario = linha.querySelector(".preco-unitario").value;
+                const subtotal = linha.querySelector(".subtotal").textContent;
+                
+                mensagem += `- ${item} (${quantidade} x R$ ${parseFloat(precoUnitario).toFixed(2)}) = ${subtotal}\n`;
+            });
+            
+            mensagem += `\n*TOTAL GERAL: R$ ${document.getElementById("total-geral").textContent}*\n`;
+            
+            const prazoEntrega = document.getElementById("prazo-entrega").value;
+            if (prazoEntrega) {
+                mensagem += `*Prazo de Entrega:* ${new Date(prazoEntrega).toLocaleDateString()}\n`;
+            }
+            
+            const prazoPagamento = document.getElementById("prazo-pagamento").value;
+            if (prazoPagamento) {
+                mensagem += `*Prazo de Pagamento:* ${new Date(prazoPagamento).toLocaleDateString()}\n`;
+            }
+            
+            mensagem += "\nAgradecemos pela preferência!";
+            
+            const encodedMessage = encodeURIComponent(mensagem);
+            window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+        });
+
+        // Limpa o formulário após salvar
+        function limparFormulario() {
+            document.getElementById("cliente").value = "";
+            document.querySelector("#tabela-orcamento tbody").innerHTML = "";
+            document.getElementById("total-geral").textContent = "0.00";
+            document.getElementById("prazo-entrega").value = "";
+            document.getElementById("prazo-pagamento").value = "";
+        }
+
+        // Carrega dados ao iniciar
         window.addEventListener("load", () => {
             carregarClientes();
             carregarItensCadastrados();
@@ -223,4 +499,3 @@
     </script>
 </body>
 </html>
-
