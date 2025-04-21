@@ -3,178 +3,569 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendário de Recebimentos</title>
+    <title>Calendário Financeiro</title>
     <style>
-      body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #F4F4F9;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-.container {
-    max-width: 900px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #FFFFFF;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+        body {
+            background-color: #f8f9fa;
+            padding: 10px;
+            color: #333;
+        }
 
-h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 20px;
-}
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 15px;
+        }
 
-form {
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #F9F9FF;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
 
-label {
-    font-weight: bold;
-}
+        .resumo {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
 
-input, select, button {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-    width: 100%;
-    margin-bottom: 10px;
-}
+        .resumo div {
+            text-align: center;
+            flex: 1;
+        }
 
-button {
-    background-color: #5A9EDB;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
+        .resumo span {
+            display: block;
+            font-weight: bold;
+        }
 
-button:hover {
-    background-color: #497FB5;
-}
+        .resumo span:first-child {
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
 
-.calendar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-}
+        .resumo span:last-child {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
 
-.day {
-    width: calc(100% / 3 - 15px); /* Ajusta para 3 colunas em telas maiores */
-    padding: 15px;
-    border-radius: 10px;
-    background-color: #FFFFFF;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: left;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
 
-.day:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
+        .calendar-controls button {
+            background: #5A9EDB;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
 
-.day.paid {
-    background-color: #D4EDDA; /* Verde claro */
-    color: #155724;
-}
+        .calendar-controls button:hover {
+            background: #497FB5;
+        }
 
-.day-header {
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-bottom: 5px;
-}
+        .month-year {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
 
-.day-content {
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-}
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
 
-.btn-cobrar, .btn-pago {
-    display: block;
-    padding: 8px 10px;
-    font-size: 0.9rem;
-    text-align: center;
-    background-color: #5A9EDB;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 8px 0;
+            color: #475569;
+            font-size: 0.8rem;
+        }
 
-.btn-cobrar:hover {
-    background-color: #497FB5;
-}
+        .day-cell {
+            min-height: 70px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px;
+            font-size: 0.85rem;
+            background: white;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-.btn-pago {
-    background-color: #4CAF50;
-}
+        .day-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
 
-.btn-pago:hover {
-    background-color: #388E3C;
-}
+        .day-cell.today {
+            border: 2px solid #5A9EDB;
+        }
 
-/* Responsividade para smartphones */
-@media screen and (max-width: 768px) {
-    .container {
-        padding: 15px;
-    }
+        .day-cell.past-unpaid {
+            background: #fff1f2;
+            border-color: #fecaca;
+        }
 
-    .calendar {
-        gap: 10px;
-    }
+        .day-cell.all-paid {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
 
-    .day {
-        width: calc(100% / 2 - 10px); /* Ajusta para 2 colunas em telas menores */
-        padding: 10px;
-    }
-}
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 2px;
+            text-align: right;
+            color: #334155;
+        }
 
-@media screen and (max-width: 480px) {
-    .day {
-        width: 100%; /* Ajusta para 1 coluna em telas muito pequenas */
-        padding: 10px;
-    }
+        .payment-count {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 4px;
+            padding: 3px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 4px;
+            color: #475569;
+        }
 
-    .btn-cobrar, .btn-pago {
-        font-size: 0.8rem; /* Botões menores para telas pequenas */
-        padding: 5px;
-    }
+        .add-payment {
+            background: #5A9EDB;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
 
-    h1 {
-        font-size: 1.5rem; /* Reduz tamanho do título em telas menores */
-    }
-}
+        .add-payment:hover {
+            background: #497FB5;
+        }
 
+        /* Modal de adicionar recebimento */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .modal h2 {
+            margin-bottom: 15px;
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+
+        .modal label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .modal input, .modal select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border 0.2s;
+        }
+
+        .modal input:focus, .modal select:focus {
+            outline: none;
+            border-color: #5A9EDB;
+            box-shadow: 0 0 0 2px rgba(90, 158, 219, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        .save-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #3d8b40;
+        }
+
+        .cancel-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background: #d32f2f;
+        }
+
+        /* Modal de detalhes do dia */
+        .day-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .day-details-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .day-details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .day-details-header h2 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin: 0;
+        }
+
+        .day-details-header button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .day-payment {
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            background: #f8fafc;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .day-payment h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .day-payment p {
+            margin: 4px 0;
+            font-size: 0.9rem;
+            color: #475569;
+        }
+
+        .day-payment p strong {
+            color: #334155;
+        }
+
+        .day-payment.paid {
+            background: #f0fdf4;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .day-payment.past-due {
+            background: #fff1f2;
+            border-left: 4px solid #f44336;
+        }
+
+        .payment-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-pago {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            flex: 1;
+            transition: background 0.2s;
+        }
+
+        .btn-pago:hover {
+            background: #3d8b40;
+        }
+
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            flex: 1;
+            transition: background 0.2s;
+        }
+
+        .btn-whatsapp:hover {
+            background: #1da851;
+        }
+
+        /* Responsividade para mobile */
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .resumo {
+                padding: 10px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .resumo div {
+                text-align: left;
+                padding: 8px;
+                background: rgba(255,255,255,0.7);
+                border-radius: 8px;
+            }
+
+            .calendar-controls button {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+
+            .month-year {
+                font-size: 1rem;
+            }
+
+            .day-header {
+                font-size: 0.7rem;
+                padding: 6px 0;
+            }
+
+            .day-cell {
+                min-height: 60px;
+                padding: 4px;
+                font-size: 0.8rem;
+            }
+
+            .day-number {
+                font-size: 0.8rem;
+            }
+
+            .payment-count {
+                font-size: 0.65rem;
+                padding: 2px;
+            }
+
+            .add-payment {
+                padding: 12px;
+                font-size: 0.95rem;
+            }
+
+            .modal-content {
+                padding: 15px;
+            }
+
+            .modal h2 {
+                font-size: 1.2rem;
+            }
+
+            .modal input, .modal select {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            .day-details-content {
+                padding: 15px;
+            }
+
+            .day-payment {
+                padding: 10px;
+            }
+
+            .day-payment h3 {
+                font-size: 0.95rem;
+            }
+
+            .day-payment p {
+                font-size: 0.85rem;
+            }
+
+            .payment-actions {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .btn-pago, .btn-whatsapp {
+                width: 100%;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Calendário de Recebimentos</h1>
+        <h1>Calendário Financeiro</h1>
+        
+        <div class="resumo">
+            <div>
+                <span id="total-pendente">R$ 0,00</span>
+                <span>A Receber</span>
+            </div>
+            <div>
+                <span id="total-recebido">R$ 0,00</span>
+                <span>Recebido</span>
+            </div>
+        </div>
+        
+        <div class="calendar-controls">
+            <button id="prev-month">&lt;</button>
+            <div class="month-year" id="current-month">Mês 2023</div>
+            <button id="next-month">&gt;</button>
+        </div>
+        
+        <div class="calendar-grid" id="calendar-header">
+            <div class="day-header">Dom</div>
+            <div class="day-header">Seg</div>
+            <div class="day-header">Ter</div>
+            <div class="day-header">Qua</div>
+            <div class="day-header">Qui</div>
+            <div class="day-header">Sex</div>
+            <div class="day-header">Sáb</div>
+        </div>
+        
+        <div class="calendar-grid" id="calendar-days"></div>
+        
+        <button class="add-payment" id="open-modal">+ Adicionar Recebimento</button>
+        <button id="btn-demonstrativo" style="margin-top:10px; background:#1e293b; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:600; cursor:pointer; width:100%;">
+    📊 Gerar Demonstrativo do Mês
+</button>
 
-        <!-- Formulário reduzido -->
-        <form id="form-pagamento">
-            <label for="descricao">Descrição</label>
-            <input type="text" id="descricao" placeholder="Ex.: Mensalidade, Fatura, etc." required>
-            <label for="valor">Valor</label>
-            <input type="number" id="valor" placeholder="Ex.: 150.00" step="0.01" required>
-            <label for="data-pagamento">Data de Vencimento</label>
-            <input type="date" id="data-pagamento" required>
-            <label for="cliente">Vincular Cliente</label>
-            <select id="cliente">
-                <option value="">Sem cliente vinculado</option>
-            </select>
-            <button type="submit">Adicionar</button>
-        </form>
+    </div>
+    
+    <!-- Modal para adicionar recebimento -->
+    <div class="modal" id="payment-modal">
+        <div class="modal-content">
+            <h2>Novo Recebimento</h2>
+            <form id="payment-form">
+                <label for="descricao">Descrição</label>
+                <input type="text" id="descricao" required>
+                
+                <label for="valor">Valor (R$)</label>
+                <input type="number" id="valor" step="0.01" required>
+                
+                <label for="data-pagamento">Data de Vencimento</label>
+                <input type="date" id="data-pagamento" required>
+                
+                <label for="cliente">Cliente (opcional)</label>
+                <select id="cliente">
+                    <option value="">Selecione...</option>
+                </select>
+                
+                <div class="modal-buttons">
+                    <button type="button" class="cancel-btn" id="cancel-payment">Cancelar</button>
+                    <button type="submit" class="save-btn">Salvar</button>
+                </div>
 
-        <!-- Calendário -->
-        <div class="calendar" id="calendario"></div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal para detalhes do dia -->
+    <div class="day-details-modal" id="day-details-modal">
+        <div class="day-details-content">
+            <div class="day-details-header">
+                <h2 id="day-details-title">Detalhes do Dia</h2>
+                <button id="close-day-details">X</button>
+            </div>
+            <div id="day-payments-list"></div>
+        </div>
     </div>
 
     <script type="module">
@@ -185,7 +576,7 @@ button:hover {
             apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
             authDomain: "novojsfer.firebaseapp.com",
             projectId: "novojsfer",
-            storageBucket: "novojsfer.firebasestorage.app",
+            storageBucket: "novojsfer.appspot.com",
             messagingSenderId: "610404413021",
             appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
         };
@@ -193,107 +584,431 @@ button:hover {
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // Variáveis globais
+        let currentDate = new Date();
+        let payments = [];
+        let clients = [];
+
+        // Elementos DOM
+        const calendarDays = document.getElementById('calendar-days');
+        const currentMonthElement = document.getElementById('current-month');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const modal = document.getElementById('payment-modal');
+        const openModalBtn = document.getElementById('open-modal');
+        const cancelModalBtn = document.getElementById('cancel-payment');
+        const paymentForm = document.getElementById('payment-form');
+        const totalPendenteElement = document.getElementById('total-pendente');
+        const totalRecebidoElement = document.getElementById('total-recebido');
+        const dayDetailsModal = document.getElementById('day-details-modal');
+        const dayDetailsTitle = document.getElementById('day-details-title');
+        const dayPaymentsList = document.getElementById('day-payments-list');
+        const closeDayDetailsBtn = document.getElementById('close-day-details');
+
+        // Função para corrigir o problema de data
+// Função para corrigir o problema de data
+function ajustarDataParaFirestore(dataString) {
+    if (!dataString) return null;
+    
+    // Simplesmente retorna a data no formato YYYY-MM-DD
+    // O Firestore irá interpretar isso corretamente como data local
+    return dataString;
+}
+        // Função para exibir data formatada
+        function formatarDataExibicao(dataString) {
+            if (!dataString) return '';
+            const [ano, mes, dia] = dataString.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarClientes();
+            carregarPagamentos();
+            
+            prevMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                atualizarCalendario();
+            });
+            
+            nextMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                atualizarCalendario();
+            });
+            
+            openModalBtn.addEventListener('click', () => {
+                modal.style.display = 'flex';
+                // Define a data atual como padrão
+                const hoje = new Date();
+                const dataFormatada = hoje.toISOString().substring(0, 10);
+                document.getElementById('data-pagamento').value = dataFormatada;
+            });
+            
+            cancelModalBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                paymentForm.reset();
+            });
+            
+            paymentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await adicionarPagamento();
+            });
+            
+            closeDayDetailsBtn.addEventListener('click', () => {
+                dayDetailsModal.style.display = 'none';
+            });
+        });
+
+        // Carrega clientes do Firebase
         async function carregarClientes() {
-            const clienteSelect = document.getElementById("cliente");
             try {
                 const querySnapshot = await getDocs(collection(db, "clientes"));
+                clients = [];
+                const clienteSelect = document.getElementById('cliente');
+                clienteSelect.innerHTML = '<option value="">Selecione...</option>';
+                
                 querySnapshot.forEach((doc) => {
-                    const cliente = doc.data();
-                    const option = document.createElement("option");
-                    option.value = JSON.stringify({ id: doc.id, nome: cliente.empresa, telefone: cliente.telefone });
-                    option.textContent = `${cliente.empresa} - ${cliente.comprador}`;
+                    const client = doc.data();
+                    clients.push({
+                        id: doc.id,
+                        ...client
+                    });
+                    
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({ 
+                        id: doc.id, 
+                        nome: client.empresa, 
+                        telefone: client.telefone 
+                    });
+                    option.textContent = `${client.empresa} - ${client.comprador}`;
                     clienteSelect.appendChild(option);
                 });
             } catch (error) {
                 console.error("Erro ao carregar clientes:", error);
+                alert("Erro ao carregar lista de clientes");
             }
         }
 
-        document.getElementById("form-pagamento").addEventListener("submit", async (event) => {
-            event.preventDefault();
+       async function carregarPagamentos() {
+    try {
+        // Consulta ordenada por dataPagamento
+        const q = query(collection(db, "recebimentos"), orderBy("dataPagamento"));
+        const querySnapshot = await getDocs(q);
+        payments = [];
+        
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            
+            // Garante que a dataPagamento existe e está no formato correto
+            if (!data.dataPagamento) {
+                console.warn("Recebimento sem data:", doc.id);
+                return;
+            }
+            
+            payments.push({
+                id: doc.id,
+                descricao: data.descricao || "",
+                valor: data.valor || 0,
+                dataPagamento: data.dataPagamento,
+                clienteId: data.clienteId || null,
+                clienteNome: data.clienteNome || null,
+                telefone: data.telefone || null,
+                pago: data.pago || false
+            });
+        });
+        
+        atualizarCalendario();
+        atualizarResumo();
+    } catch (error) {
+        console.error("Erro ao carregar recebimentos:", error);
+        alert("Erro ao carregar recebimentos. Verifique o console para detalhes.");
+    }
+}
 
-            const clienteSelect = document.getElementById("cliente");
+        // Adiciona novo pagamento
+        async function adicionarPagamento() {
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const dataInput = document.getElementById('data-pagamento').value;
+            const dataCorrigida = ajustarDataParaFirestore(dataInput);
+            const clienteSelect = document.getElementById('cliente');
             const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
-            const descricao = document.getElementById("descricao").value;
-            const valor = document.getElementById("valor").value;
-            const dataPagamento = document.getElementById("data-pagamento").value;
-
+            
+            // Validações
+            if (!descricao || !descricao.trim()) {
+                alert("Informe uma descrição válida!");
+                return;
+            }
+            
+            if (isNaN(valor) || valor <= 0) {
+                alert("Informe um valor válido!");
+                return;
+            }
+            
+            if (!dataCorrigida) {
+                alert("Data inválida!");
+                return;
+            }
+            
             try {
                 await addDoc(collection(db, "recebimentos"), {
+                    descricao: descricao.trim(),
+                    valor,
+                    dataPagamento: dataCorrigida,
                     clienteId: clienteSelecionado?.id || null,
                     clienteNome: clienteSelecionado?.nome || null,
-                    descricao,
-                    valor,
-                    dataPagamento,
                     telefone: clienteSelecionado?.telefone || null,
-                    pago: false
+                    pago: false,
+                    createdAt: new Date()
                 });
-
-                alert("Pagamento adicionado ao calendário!");
-                carregarCalendario();
+                
+                modal.style.display = 'none';
+                paymentForm.reset();
+                await carregarPagamentos();
+                
+                alert(`Recebimento adicionado para ${formatarDataExibicao(dataCorrigida)} com sucesso!`);
             } catch (error) {
-                console.error("Erro ao adicionar pagamento:", error);
+                console.error("Erro ao adicionar recebimento:", error);
+                alert("Erro ao adicionar recebimento");
             }
-        });
-
-        function formatarDataBrasileira(data) {
-            const [ano, mes, dia] = data.split("-");
-            return `${dia}/${mes}/${ano}`;
         }
 
-        async function carregarCalendario() {
-            const calendarioDiv = document.getElementById("calendario");
-            calendarioDiv.innerHTML = "";
-
-            const querySnapshot = await getDocs(query(collection(db, "recebimentos"), orderBy("dataPagamento")));
-            querySnapshot.forEach((docSnapshot) => {
-                const pagamento = docSnapshot.data();
-                const pagamentoId = docSnapshot.id;
-
-                const diaDiv = document.createElement("div");
-                diaDiv.classList.add("day");
-                if (pagamento.pago) diaDiv.classList.add("paid");
-
-                diaDiv.innerHTML = `
-                    <div class="day-header">${formatarDataBrasileira(pagamento.dataPagamento)}</div>
-                    <div class="day-content"><strong>${pagamento.descricao}</strong></div>
-                    <div class="day-content">R$ ${parseFloat(pagamento.valor).toFixed(2)}</div>
-                    ${pagamento.clienteNome ? `<div class="day-content">${pagamento.clienteNome}</div>` : ""}
-                `;
-
-                if (!pagamento.pago) {
-                    const btnPago = document.createElement("button");
-                    btnPago.textContent = "Marcar como Pago";
-                    btnPago.classList.add("btn-pago");
-                    btnPago.addEventListener("click", async () => {
-                        await updateDoc(doc(db, "recebimentos", pagamentoId), { pago: true });
-                        alert("Pagamento marcado como pago!");
-                        carregarCalendario();
-                    });
-                    diaDiv.appendChild(btnPago);
+        // Atualiza calendário
+        function atualizarCalendario() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            currentMonthElement.textContent = `${getMonthName(month)} ${year}`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            const startDay = firstDay.getDay();
+            const totalDays = lastDay.getDate();
+            
+            calendarDays.innerHTML = '';
+            
+            // Dias vazios no início
+            for (let i = 0; i < startDay; i++) {
+                calendarDays.appendChild(criarDiaVazio());
+            }
+            
+            // Dias do mês
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            for (let day = 1; day <= totalDays; day++) {
+                const date = new Date(year, month, day);
+                const dayPayments = payments.filter(p => {
+                    // Extrai dia, mês e ano diretamente da string (evita problemas de fuso horário)
+                    const [ano, mes, dia] = p.dataPagamento.split('-');
+                    return parseInt(dia) === day && 
+                           parseInt(mes) === month + 1 && 
+                           parseInt(ano) === year;
+                });
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day-cell';
+                
+                // Verifica se é hoje
+                if (date.toDateString() === today.toDateString()) {
+                    dayElement.classList.add('today');
                 }
-
-                if (pagamento.telefone) {
-                                       const btnCobrar = document.createElement("button");
-                    btnCobrar.textContent = "Cobrar via WhatsApp";
-                    btnCobrar.classList.add("btn-cobrar");
-                    btnCobrar.addEventListener("click", () => {
-                        const mensagem = `Olá! Este é um lembrete  sobre o vencimento de "${pagamento.descricao}".\nValor: R$ ${pagamento.valor}\nPor favor, entre em contato para mais detalhes.`;
-                        const url = `https://wa.me/${pagamento.telefone}?text=${encodeURIComponent(mensagem)}`;
-                        window.open(url, "_blank");
-                    });
-                    diaDiv.appendChild(btnCobrar);
+                
+                // Verifica status dos pagamentos
+                const hasPastDue = dayPayments.some(p => !p.pago && new Date(p.dataPagamento) < today);
+                const allPaid = dayPayments.length > 0 && dayPayments.every(p => p.pago);
+                
+                if (hasPastDue) {
+                    dayElement.classList.add('past-unpaid');
+                } else if (allPaid) {
+                    dayElement.classList.add('all-paid');
                 }
+                
+                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
+                
+                if (dayPayments.length > 0) {
+                    const paymentCount = document.createElement('div');
+                    paymentCount.className = 'payment-count';
+                    paymentCount.textContent = `${dayPayments.length} rec.`;
+                    dayElement.appendChild(paymentCount);
+                }
+                
+                dayElement.addEventListener('click', () => {
+                    mostrarDetalhesDia(date, dayPayments);
+                });
+                
+                calendarDays.appendChild(dayElement);
+            }
+            
+            // Dias vazios no final
+            const daysShown = startDay + totalDays;
+            const remainingCells = daysShown % 7 === 0 ? 0 : 7 - (daysShown % 7);
+            
+            for (let i = 0; i < remainingCells; i++) {
+                calendarDays.appendChild(criarDiaVazio());
+            }
+            atualizarResumo();
 
-                calendarioDiv.appendChild(diaDiv);
-            });
         }
 
-        // Carregar clientes e calendário ao iniciar
-        window.addEventListener("load", () => {
-            carregarClientes();
-            carregarCalendario();
+
+        // Cria dia vazio
+        function criarDiaVazio() {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'day-cell';
+            emptyDay.style.visibility = 'hidden';
+            return emptyDay;
+        }
+
+        // Mostra detalhes do dia
+        function mostrarDetalhesDia(date, dayPayments) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dayDetailsTitle.textContent = date.toLocaleDateString('pt-BR', options);
+            dayPaymentsList.innerHTML = '';
+            
+            if (dayPayments.length === 0) {
+                dayPaymentsList.innerHTML = '<p style="text-align: center; color: #64748b;">Nenhum recebimento para este dia.</p>';
+            } else {
+                // Ordena: atrasados primeiro, depois pendentes, depois pagos
+                dayPayments.sort((a, b) => {
+                    const aDate = new Date(a.dataPagamento);
+                    const bDate = new Date(b.dataPagamento);
+                    const aStatus = a.pago ? 2 : aDate < new Date() ? 0 : 1;
+                    const bStatus = b.pago ? 2 : bDate < new Date() ? 0 : 1;
+                    return aStatus - bStatus;
+                });
+                
+                dayPayments.forEach(payment => {
+                    const paymentDate = new Date(payment.dataPagamento);
+                    const isPastDue = !payment.pago && paymentDate < new Date();
+                    
+                    const paymentElement = document.createElement('div');
+                    paymentElement.className = `day-payment ${payment.pago ? 'paid' : isPastDue ? 'past-due' : ''}`;
+                    
+                    paymentElement.innerHTML = `
+                        <h3>${payment.descricao}</h3>
+                        <p><strong>Valor:</strong> R$ ${payment.valor.toFixed(2)}</p>
+                        ${payment.clienteNome ? `<p><strong>Cliente:</strong> ${payment.clienteNome}</p>` : ''}
+                        <p><strong>Status:</strong> ${payment.pago ? 'Pago' : isPastDue ? 'Atrasado' : 'Pendente'}</p>
+                        <p><strong>Vencimento:</strong> ${formatarDataExibicao(payment.dataPagamento)}</p>
+                        
+                        <div class="payment-actions">
+                            ${!payment.pago ? `
+                                <button class="btn-pago" onclick="marcarComoPago('${payment.id}')">Marcar como Pago</button>
+                                ${payment.telefone ? `<button class="btn-whatsapp" onclick="cobrarViaWhatsapp(${JSON.stringify(payment).replace(/"/g, '&quot;')})">WhatsApp</button>` : ''}
+                            ` : ''}
+                        </div>
+                    `;
+                    
+                    dayPaymentsList.appendChild(paymentElement);
+                });
+            }
+            
+            dayDetailsModal.style.display = 'flex';
+        }
+
+        // Marcar como pago
+        window.marcarComoPago = async function(paymentId) {
+            if (confirm("Deseja marcar este recebimento como pago?")) {
+                try {
+                    await updateDoc(doc(db, "recebimentos", paymentId), {
+                        pago: true
+                    });
+                    await carregarPagamentos();
+                    dayDetailsModal.style.display = 'none';
+                } catch (error) {
+                    console.error("Erro ao atualizar pagamento:", error);
+                    alert("Erro ao marcar como pago");
+                }
+            }
+        }
+
+        // Cobrar via WhatsApp
+        window.cobrarViaWhatsapp = function(payment) {
+            const mensagem = `Olá! Este é um lembrete sobre o vencimento de "${payment.descricao}".\nValor: R$ ${payment.valor.toFixed(2)}\nVencimento: ${formatarDataExibicao(payment.dataPagamento)}\nPor favor, entre em contato para mais detalhes.`;
+            const url = `https://wa.me/${payment.telefone}?text=${encodeURIComponent(mensagem)}`;
+            window.open(url, "_blank");
+        }
+
+        // Atualiza resumo financeiro
+    function atualizarResumo() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+
+    let totalPendente = 0;
+    let totalRecebido = 0;
+
+    payments.forEach(payment => {
+        const [ano, mes] = payment.dataPagamento.split('-').map(Number);
+        if (ano === year && mes === month) {
+            if (payment.pago) {
+                totalRecebido += payment.valor;
+            } else {
+                totalPendente += payment.valor;
+            }
+        }
+    });
+
+    totalPendenteElement.textContent = `R$ ${totalPendente.toFixed(2)}`;
+    totalRecebidoElement.textContent = `R$ ${totalRecebido.toFixed(2)}`;
+}
+
+
+        function getMonthName(month) {
+            const months = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            return months[month];
+        }
+        // Ação do botão demonstrativo
+document.getElementById('btn-demonstrativo').addEventListener('click', () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+
+    const pagamentosDoMes = payments.filter(p => {
+        const [ano, mes] = p.dataPagamento.split('-').map(Number);
+        return ano === year && mes === month;
+    });
+
+    let html = '';
+
+    const recebidos = pagamentosDoMes.filter(p => p.pago);
+    const pendentes = pagamentosDoMes.filter(p => !p.pago);
+
+    if (recebidos.length > 0) {
+        html += '<h3 style="color:green;">Recebidos</h3><ul>';
+        recebidos.forEach(p => {
+            html += `<li><strong>${p.descricao}</strong> - R$ ${p.valor.toFixed(2)} (${formatarDataExibicao(p.dataPagamento)})</li>`;
         });
+        html += '</ul>';
+    }
+
+    if (pendentes.length > 0) {
+        html += '<h3 style="color:#eab308;">A Receber</h3><ul>';
+        pendentes.forEach(p => {
+            html += `<li><strong>${p.descricao}</strong> - R$ ${p.valor.toFixed(2)} (${formatarDataExibicao(p.dataPagamento)})</li>`;
+        });
+        html += '</ul>';
+    }
+
+    if (html === '') {
+        html = '<p style="color:#64748b;">Nenhum lançamento neste mês.</p>';
+    }
+
+    document.getElementById('lista-demonstrativo').innerHTML = html;
+    document.getElementById('modal-demonstrativo').style.display = 'flex';
+});
+
     </script>
+    <div class="modal" id="modal-demonstrativo" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div class="modal-content" style="background:white; padding:20px; border-radius:12px; max-width:600px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.1); max-height:80vh; overflow-y:auto;">
+        <h2>Demonstrativo do Mês</h2>
+        <div id="lista-demonstrativo" style="margin:15px 0;"></div>
+        <button onclick="document.getElementById('modal-demonstrativo').style.display='none'" style="background:#f44336;color:white;border:none;padding:10px 15px;border-radius:8px;cursor:pointer;width:100%;">Fechar</button>
+    </div>
+</div>
+
 </body>
-</html>
+</html>>
