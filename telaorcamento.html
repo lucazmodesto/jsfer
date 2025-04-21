@@ -302,84 +302,6 @@ window.addEventListener("load", async () => {
             
             document.getElementById("total-geral").textContent = totalGeral.toFixed(2);
         }
-document.getElementById("salvar-orcamento").addEventListener("click", async () => {
-    const clienteSelect = document.getElementById("cliente");
-    const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
-
-    if (!clienteSelecionado) {
-        alert("Selecione um cliente para salvar o orçamento!");
-        return;
-    }
-
-    const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
-    if (linhas.length === 0) {
-        alert("Adicione pelo menos um item ao orçamento!");
-        return;
-    }
-
-    const itens = [];
-    linhas.forEach((linha) => {
-        const item = linha.querySelector("td:first-child").textContent.trim();
-        const descricao = linha.querySelector("td:nth-child(2) input").value.trim();
-        const quantidade = parseFloat(linha.querySelector(".quantidade").value) || 0;
-        const precoUnitario = parseFloat(linha.querySelector(".preco-unitario").value) || 0;
-        const subtotal = quantidade * precoUnitario;
-        
-        itens.push({ item, descricao, quantidade, precoUnitario, subtotal });
-    });
-
-    const prazoEntrega = document.getElementById("prazo-entrega").value;
-    const prazoPagamento = document.getElementById("prazo-pagamento").value;
-    const totalGeral = parseFloat(document.getElementById("total-geral").textContent);
-
-    try {
-        if (modoEdicao) {
-            // Atualizar orçamento existente
-            const orcRef = doc(db, "orcamentos", orcamentoId);
-            await updateDoc(orcRef, {
-                clienteId: clienteSelecionado.id,
-                clienteNome: clienteSelecionado.nome,
-                itens,
-                totalGeral,
-                prazoEntrega,
-                prazoPagamento
-            });
-            alert("Orçamento atualizado com sucesso!");
-        } else {
-            // Buscar todos os orçamentos para determinar o próximo número
-            const querySnapshot = await getDocs(collection(db, "orcamentos"));
-            let maiorNumero = 0;
-
-            querySnapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                if (data.numero && !isNaN(data.numero)) {
-                    maiorNumero = Math.max(maiorNumero, data.numero);
-                }
-            });
-
-            const novoNumero = maiorNumero + 1;
-
-            // Criar novo orçamento com número sequencial
-            await addDoc(collection(db, "orcamentos"), {
-                clienteId: clienteSelecionado.id,
-                clienteNome: clienteSelecionado.nome,
-                itens,
-                totalGeral,
-                prazoEntrega,
-                prazoPagamento,
-                dataCriacao: new Date().toISOString(),
-                status: "pendente",
-                numero: novoNumero
-            });
-
-            alert(`Orçamento Nº ${String(novoNumero).padStart(2, "0")} salvo com sucesso!`);
-            limparFormulario();
-        }
-    } catch (error) {
-        console.error("Erro ao salvar orçamento:", error);
-        alert("Erro ao salvar o orçamento. Verifique o console.");
-    }
-});
 
         // Gera PDF do orçamento
         document.getElementById("gerar-pdf").addEventListener("click", () => {
@@ -490,6 +412,61 @@ document.getElementById("salvar-orcamento").addEventListener("click", async () =
             document.getElementById("prazo-entrega").value = "";
             document.getElementById("prazo-pagamento").value = "";
         }
+        // Salvar orçamento no Firebase
+document.getElementById("salvar-orcamento").addEventListener("click", async () => {
+    const clienteSelect = document.getElementById("cliente");
+    const prazoEntrega = document.getElementById("prazo-entrega").value;
+    const prazoPagamento = document.getElementById("prazo-pagamento").value;
+    const totalGeral = parseFloat(document.getElementById("total-geral").textContent);
+    
+    if (!clienteSelect.value) {
+        return alert("Selecione um cliente antes de salvar!");
+    }
+    
+    const cliente = JSON.parse(clienteSelect.value);
+    
+    // Coletar itens da tabela
+    const itens = [];
+    const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
+    linhas.forEach((linha) => {
+        itens.push({
+            item: linha.querySelector("td:first-child").textContent.trim(),
+            descricao: linha.querySelector("td:nth-child(2) input").value.trim(),
+            quantidade: parseFloat(linha.querySelector(".quantidade").value),
+            precoUnitario: parseFloat(linha.querySelector(".preco-unitario").value)
+        });
+    });
+    
+    if (itens.length === 0) {
+        return alert("Adicione pelo menos um item ao orçamento!");
+    }
+    
+    try {
+        const dadosOrcamento = {
+            clienteId: cliente.id,
+            clienteNome: cliente.nome,
+            itens,
+            totalGeral,
+            prazoEntrega,
+            prazoPagamento,
+            dataCriacao: new Date().toISOString()
+        };
+        
+        if (modoEdicao && orcamentoId) {
+            // Atualiza orçamento existente
+            await updateDoc(doc(db, "orcamentos", orcamentoId), dadosOrcamento);
+            alert("Orçamento atualizado com sucesso!");
+        } else {
+            // Cria novo orçamento
+            await addDoc(collection(db, "orcamentos"), dadosOrcamento);
+            alert("Orçamento salvo com sucesso!");
+            limparFormulario();
+        }
+    } catch (error) {
+        console.error("Erro ao salvar orçamento:", error);
+        alert("Erro ao salvar orçamento. Verifique o console.");
+    }
+});
 
         // Carrega dados ao iniciar
         window.addEventListener("load", () => {
