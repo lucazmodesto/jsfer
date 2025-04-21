@@ -3,12 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/cadastromateriais.css">
-    <title>Clientes</title>
+    <title>Clientes e Orçamentos</title>
+    <style>
+        /* Estilos gerais */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        
+        /* Estilos para a lista de clientes */
+        #lista-clientes {
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        #lista-clientes li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #lista-clientes li:hover {
+            background-color: #f0f0f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .cliente-info {
+            margin-bottom: 10px;
+        }
+        .cliente-nome {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2c3e50;
+        }
+        .cliente-contato {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        /* Estilos para a seção de orçamentos */
+        #orcamentos-cliente {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        #tabela-orcamentos {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        #tabela-orcamentos th, #tabela-orcamentos td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        #tabela-orcamentos th {
+            background-color: #f2f2f2;
+        }
+        #tabela-orcamentos tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        #tabela-orcamentos tr:hover {
+            background-color: #f1f1f1;
+        }
+        .status-pendente {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .status-aprovado {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .status-finalizado {
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        /* Botões */
+        button {
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+        #novo-orcamento {
+            background-color: #2ecc71;
+            color: white;
+        }
+        #novo-orcamento:hover {
+            background-color: #27ae60;
+        }
+        .btn-editar {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-editar:hover {
+            background-color: #2980b9;
+        }
+        .btn-excluir {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-excluir:hover {
+            background-color: #c0392b;
+        }
+        
+        /* Filtros e busca */
+        .filtros {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .filtros select, .filtros input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .filtros label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Clientes</h1>
+        <h1>Clientes e Orçamentos</h1>
+        
+        <!-- Filtros -->
+        <div class="filtros">
+            <div>
+                <label for="filtro-status">Status:</label>
+                <select id="filtro-status">
+                    <option value="todos">Todos</option>
+                    <option value="pendente">Pendentes</option>
+                    <option value="aprovado">Aprovados</option>
+                    <option value="finalizado">Finalizados</option>
+                </select>
+            </div>
+            <div>
+                <label for="busca-cliente">Buscar:</label>
+                <input type="text" id="busca-cliente" placeholder="Nome do cliente...">
+            </div>
+        </div>
 
         <!-- Lista de Clientes -->
         <div>
@@ -18,9 +206,24 @@
         </div>
 
         <!-- Orçamentos do Cliente -->
-        <h2>Orçamentos</h2>
         <div id="orcamentos-cliente">
-            <p>Selecione um cliente para visualizar os orçamentos.</p>
+            <h2>Orçamentos</h2>
+            <p>Selecione um cliente para visualizar seus orçamentos.</p>
+            <table id="tabela-orcamentos" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Data</th>
+                        <th>Valor Total</th>
+                        <th>Status</th>
+                        <th>Prazo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Orçamentos serão preenchidos dinamicamente -->
+                </tbody>
+            </table>
         </div>
 
         <!-- Botão para Adicionar Novo Orçamento -->
@@ -29,15 +232,36 @@
         </div>
     </div>
 
+    <!-- Modal para visualização rápida -->
+    <div id="modal-orcamento" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-titulo">Detalhes do Orçamento</h2>
+            <div id="modal-conteudo">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            query, 
+            where, 
+            doc, 
+            getDoc,
+            updateDoc,
+            deleteDoc
+        } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
             authDomain: "novojsfer.firebaseapp.com",
             projectId: "novojsfer",
-            storageBucket: "novojsfer.firebasestorage.app",
+            storageBucket: "novojsfer.appspot.com",
             messagingSenderId: "610404413021",
             appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
         };
@@ -45,62 +269,332 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Função para carregar clientes
+        // Elementos do DOM
+        const listaClientes = document.getElementById("lista-clientes");
+        const orcamentosDiv = document.getElementById("orcamentos-cliente");
+        const tabelaOrcamentos = document.getElementById("tabela-orcamentos");
+        const tbodyOrcamentos = tabelaOrcamentos.querySelector("tbody");
+        const novoOrcamentoBtn = document.getElementById("novo-orcamento");
+        const filtroStatus = document.getElementById("filtro-status");
+        const buscaCliente = document.getElementById("busca-cliente");
+        const modal = document.getElementById("modal-orcamento");
+        const modalTitulo = document.getElementById("modal-titulo");
+        const modalConteudo = document.getElementById("modal-conteudo");
+        const spanClose = document.getElementsByClassName("close")[0];
+
+        // Variáveis globais
+        let clientesData = [];
+        let orcamentosData = [];
+        let clienteSelecionado = null;
+
+        // Função para carregar clientes com filtros
         async function carregarClientes() {
-            const listaClientes = document.getElementById("lista-clientes");
+            listaClientes.innerHTML = "";
             try {
                 const querySnapshot = await getDocs(collection(db, "clientes"));
+                clientesData = [];
+                
                 querySnapshot.forEach((doc) => {
-                    const cliente = doc.data();
-                    const li = document.createElement("li");
-                    li.textContent = `${cliente.empresa} - ${cliente.comprador}`;
-                    li.dataset.clienteId = doc.id;
-                    li.addEventListener("click", () => carregarOrcamentos(doc.id, cliente.empresa));
-                    listaClientes.appendChild(li);
+                    const cliente = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+                    clientesData.push(cliente);
                 });
+
+                aplicarFiltros();
             } catch (error) {
                 console.error("Erro ao carregar clientes:", error);
+                listaClientes.innerHTML = "<li>Erro ao carregar clientes. Tente recarregar a página.</li>";
             }
+        }
+
+        // Função para aplicar filtros na lista de clientes
+        function aplicarFiltros() {
+            const statusFiltro = filtroStatus.value;
+            const termoBusca = buscaCliente.value.toLowerCase();
+            
+            listaClientes.innerHTML = "";
+            
+            const clientesFiltrados = clientesData.filter(cliente => {
+                // Filtro por status (se aplicável)
+                if (statusFiltro !== "todos" && orcamentosData.length > 0) {
+                    const orcamentosCliente = orcamentosData.filter(o => o.clienteId === cliente.id);
+                    if (orcamentosCliente.length === 0) return false;
+                    
+                    if (statusFiltro === "pendente") {
+                        const temPendente = orcamentosCliente.some(o => o.status === "pendente");
+                        if (!temPendente) return false;
+                    } else if (statusFiltro === "aprovado") {
+                        const temAprovado = orcamentosCliente.some(o => o.status === "aprovado");
+                        if (!temAprovado) return false;
+                    } else if (statusFiltro === "finalizado") {
+                        const temFinalizado = orcamentosCliente.some(o => o.status === "finalizado");
+                        if (!temFinalizado) return false;
+                    }
+                }
+                
+                // Filtro por busca
+                if (termoBusca) {
+                    const nomeMatch = cliente.empresa.toLowerCase().includes(termoBusca) || 
+                                      cliente.comprador.toLowerCase().includes(termoBusca);
+                    if (!nomeMatch) return false;
+                }
+                
+                return true;
+            });
+            
+            if (clientesFiltrados.length === 0) {
+                listaClientes.innerHTML = "<li>Nenhum cliente encontrado com os filtros aplicados.</li>";
+                return;
+            }
+            
+            clientesFiltrados.forEach(cliente => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <div class="cliente-info">
+                        <div class="cliente-nome">${cliente.empresa}</div>
+                        <div class="cliente-contato">${cliente.comprador} | ${cliente.telefone || 'Sem telefone'}</div>
+                    </div>
+                    <div>
+                        <small>${cliente.email || 'Sem e-mail'}</small>
+                    </div>
+                `;
+                li.dataset.clienteId = cliente.id;
+                li.addEventListener("click", () => {
+                    // Remove a seleção anterior
+                    document.querySelectorAll("#lista-clientes li").forEach(item => {
+                        item.style.backgroundColor = "";
+                    });
+                    // Adiciona seleção ao item clicado
+                    li.style.backgroundColor = "#e3f2fd";
+                    
+                    carregarOrcamentos(cliente.id, cliente.empresa);
+                    clienteSelecionado = cliente;
+                });
+                listaClientes.appendChild(li);
+            });
         }
 
         // Função para carregar orçamentos de um cliente
         async function carregarOrcamentos(clienteId, clienteNome) {
-            const orcamentosDiv = document.getElementById("orcamentos-cliente");
-            const novoOrcamentoBtn = document.getElementById("novo-orcamento");
-
-            // Exibe botão de adicionar novo orçamento
+            tbodyOrcamentos.innerHTML = "";
             novoOrcamentoBtn.style.display = "block";
             novoOrcamentoBtn.onclick = () => {
-                const urlNovoOrcamento = `telaorcamento.html?clienteId=${clienteId}&clienteNome=${encodeURIComponent(clienteNome)}`;
-                window.open(urlNovoOrcamento, "_self");
+                window.location.href = `telaorcamento.html?clienteId=${clienteId}&clienteNome=${encodeURIComponent(clienteNome)}`;
             };
-
-            orcamentosDiv.innerHTML = `<h3>Orçamentos de ${clienteNome}</h3>`;
-
+            
             try {
                 const orcamentoQuery = query(collection(db, "orcamentos"), where("clienteId", "==", clienteId));
                 const querySnapshot = await getDocs(orcamentoQuery);
-
+                
+                orcamentosData = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
                 if (querySnapshot.empty) {
-                    orcamentosDiv.innerHTML += "<p>Não há orçamentos cadastrados para este cliente.</p>";
+                    tabelaOrcamentos.style.display = "none";
+                    orcamentosDiv.innerHTML = `
+                        <h2>Orçamentos de ${clienteNome}</h2>
+                        <p>Não há orçamentos cadastrados para este cliente.</p>
+                    `;
                     return;
                 }
-
-                const ul = document.createElement("ul");
+                
+                tabelaOrcamentos.style.display = "table";
+                orcamentosDiv.innerHTML = `
+                    <h2>Orçamentos de ${clienteNome}</h2>
+                    <p>${querySnapshot.size} orçamento(s) encontrado(s)</p>
+                `;
+                orcamentosDiv.appendChild(tabelaOrcamentos);
+                
                 querySnapshot.forEach((doc) => {
                     const orcamento = doc.data();
-                    const li = document.createElement("li");
-                    li.innerHTML = `<a href="telaorcamento.html?orcamentoId=${doc.id}" target="_self">Orçamento #${doc.id} - Total: R$ ${orcamento.totalGeral}</a>`;
-                    ul.appendChild(li);
+                    const dataFormatada = new Date(orcamento.dataCriacao).toLocaleDateString();
+                    const prazoEntrega = orcamento.prazoEntrega ? new Date(orcamento.prazoEntrega).toLocaleDateString() : "Não definido";
+                    const status = orcamento.status || "pendente";
+                    
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${String(orcamento.numero || 0).padStart(2, "0")}</td>
+                        <td>${dataFormatada}</td>
+                        <td>R$ ${orcamento.totalGeral.toFixed(2)}</td>
+                        <td class="status-${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</td>
+                        <td>${prazoEntrega}</td>
+                        <td>
+                            <button class="btn-editar" data-orcamento-id="${doc.id}">Editar</button>
+                            <button class="btn-visualizar" data-orcamento-id="${doc.id}">Visualizar</button>
+                        </td>
+                    `;
+                    tbodyOrcamentos.appendChild(tr);
                 });
-                orcamentosDiv.appendChild(ul);
+                
+                // Adiciona eventos aos botões de edição
+                document.querySelectorAll(".btn-editar").forEach(btn => {
+                    btn.addEventListener("click", (e) => {
+                        const orcamentoId = e.target.dataset.orcamentoId;
+                        window.location.href = `telaorcamento.html?orcamentoId=${orcamentoId}`;
+                    });
+                });
+                
+                // Adiciona eventos aos botões de visualização
+                document.querySelectorAll(".btn-visualizar").forEach(btn => {
+                    btn.addEventListener("click", async (e) => {
+                        const orcamentoId = e.target.dataset.orcamentoId;
+                        await exibirDetalhesOrcamento(orcamentoId);
+                    });
+                });
+                
             } catch (error) {
                 console.error("Erro ao carregar orçamentos:", error);
                 orcamentosDiv.innerHTML += "<p>Erro ao carregar os orçamentos.</p>";
             }
         }
 
-        // Carregar clientes ao iniciar
+        // Função para exibir detalhes do orçamento no modal
+        async function exibirDetalhesOrcamento(orcamentoId) {
+            try {
+                const docRef = doc(db, "orcamentos", orcamentoId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const orcamento = docSnap.data();
+                    const cliente = clienteSelecionado || await getClienteById(orcamento.clienteId);
+                    
+                    modalTitulo.textContent = `Orçamento #${orcamentoId.substring(0, 8)}... - ${cliente.empresa}`;
+                    
+                    let html = `
+                        <p><strong>Cliente:</strong> ${cliente.empresa} (${cliente.comprador})</p>
+                        <p><strong>Data:</strong> ${new Date(orcamento.dataCriacao).toLocaleDateString()}</p>
+                        <p><strong>Status:</strong> <span class="status-${orcamento.status || 'pendente'}">${(orcamento.status || 'pendente').charAt(0).toUpperCase() + (orcamento.status || 'pendente').slice(1)}</span></p>
+                        <p><strong>Total:</strong> R$ ${orcamento.totalGeral.toFixed(2)}</p>
+                        
+                        <h3>Itens do Orçamento</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                            <thead>
+                                <tr>
+                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
+                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Descrição</th>
+                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Qtd.</th>
+                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Preço Unit.</th>
+                                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    orcamento.itens.forEach(item => {
+                        html += `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${item.item}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${item.descricao}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">${item.quantidade}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">R$ ${item.precoUnitario.toFixed(2)}</td>
+                                <td style="border: 1px solid #ddd; padding: 8px;">R$ ${item.subtotal.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += `
+                            </tbody>
+                        </table>
+                        
+                        <div style="margin-top: 20px;">
+                            <p><strong>Prazo de Entrega:</strong> ${orcamento.prazoEntrega ? new Date(orcamento.prazoEntrega).toLocaleDateString() : 'Não definido'}</p>
+                            <p><strong>Prazo de Pagamento:</strong> ${orcamento.prazoPagamento ? new Date(orcamento.prazoPagamento).toLocaleDateString() : 'Não definido'}</p>
+                        </div>
+                        
+                        <div style="margin-top: 20px; display: flex; gap: 10px;">
+                            <button class="btn-editar" onclick="window.location.href='telaorcamento.html?orcamentoId=${orcamentoId}'">Editar Orçamento</button>
+                            <button id="btn-aprovar" class="btn-aprovar" data-orcamento-id="${orcamentoId}">Marcar como Aprovado</button>
+                            <button id="btn-finalizar" class="btn-finalizar" data-orcamento-id="${orcamentoId}">Marcar como Finalizado</button>
+                        </div>
+                    `;
+                    
+                    modalConteudo.innerHTML = html;
+                    modal.style.display = "block";
+                    
+                    // Adiciona eventos aos botões do modal
+                    if (document.getElementById("btn-aprovar")) {
+                        document.getElementById("btn-aprovar").addEventListener("click", async () => {
+                            await atualizarStatusOrcamento(orcamentoId, "aprovado");
+                        });
+                    }
+                    
+                    if (document.getElementById("btn-finalizar")) {
+                        document.getElementById("btn-finalizar").addEventListener("click", async () => {
+                            await atualizarStatusOrcamento(orcamentoId, "finalizado");
+                        });
+                    }
+                } else {
+                    modalConteudo.innerHTML = "<p>Orçamento não encontrado.</p>";
+                    modal.style.display = "block";
+                }
+            } catch (error) {
+                console.error("Erro ao carregar detalhes do orçamento:", error);
+                modalConteudo.innerHTML = "<p>Erro ao carregar os detalhes do orçamento.</p>";
+                modal.style.display = "block";
+            }
+        }
+
+        // Função auxiliar para obter cliente por ID
+        async function getClienteById(clienteId) {
+            try {
+                const docRef = doc(db, "clientes", clienteId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    return {
+                        id: docSnap.id,
+                        ...docSnap.data()
+                    };
+                }
+                return { empresa: "Cliente não encontrado", comprador: "" };
+            } catch (error) {
+                console.error("Erro ao buscar cliente:", error);
+                return { empresa: "Erro ao carregar cliente", comprador: "" };
+            }
+        }
+
+        // Função para atualizar status do orçamento
+        async function atualizarStatusOrcamento(orcamentoId, novoStatus) {
+            try {
+                const orcamentoRef = doc(db, "orcamentos", orcamentoId);
+                await updateDoc(orcamentoRef, {
+                    status: novoStatus
+                });
+                
+                alert(`Orçamento marcado como ${novoStatus} com sucesso!`);
+                modal.style.display = "none";
+                
+                // Recarrega os orçamentos se um cliente estiver selecionado
+                if (clienteSelecionado) {
+                    await carregarOrcamentos(clienteSelecionado.id, clienteSelecionado.empresa);
+                }
+            } catch (error) {
+                console.error("Erro ao atualizar status do orçamento:", error);
+                alert("Erro ao atualizar o status do orçamento.");
+            }
+        }
+
+        // Evento para fechar o modal
+        spanClose.onclick = function() {
+            modal.style.display = "none";
+        };
+
+        // Fechar modal ao clicar fora dele
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+
+        // Eventos para filtros
+        filtroStatus.addEventListener("change", aplicarFiltros);
+        buscaCliente.addEventListener("input", aplicarFiltros);
+
+        // Carregar dados ao iniciar
         window.addEventListener("load", () => {
             carregarClientes();
         });
