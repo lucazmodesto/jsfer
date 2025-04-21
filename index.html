@@ -1,200 +1,202 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boss - Gestão Empresarial</title>
-    <!-- Font Awesome para os ícones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Boss - Gestão Empresarial</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
 
-    <style>
-        /* Estilo do iframe que carrega o conteúdo */
-        iframe {
-            width: calc(100% - 250px);
-            height: 100vh;
-            border: none;
-            margin-left: 250px;
-            transition: margin-left 0.3s ease;
-        }
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        /* Estilo da barra lateral */
-        .sidebar {
-            height: 100vh;
-            width: 250px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #1E1E2E;
-            color: #E4E4E7;
-            padding-top: 20px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-            overflow-y: auto;
-            transition: left 0.3s ease;
-        }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
 
-        .logo {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .container {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-        .logo img {
-            max-width: 80%;
-            height: auto;
-            border-radius: 8px;
-        }
+    .sidebar {
+      width: 250px;
+      background-color: #1E1E2E;
+      color: #E4E4E7;
+      transition: all 0.3s ease;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
 
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            text-decoration: none;
-            font-size: 16px;
-            color: #E4E4E7;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
+    .sidebar.hidden {
+      width: 0;
+      overflow: hidden;
+    }
 
-        .sidebar a i {
-            margin-right: 10px;
-            font-size: 20px;
-        }
+    .logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
-        .sidebar a:hover {
-            background-color: #4CAF50;
-            color: #FFFFFF;
-        }
+    .logo img {
+      max-width: 80%;
+      height: auto;
+      border-radius: 8px;
+    }
 
-        /* Botão de alternância do menu */
-        .toggle-btn {
-            position: fixed;
-            top: 20px;
-            left: 250px;
-            z-index: 1000;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            border-radius: 0 5px 5px 0;
-            cursor: pointer;
-            transition: left 0.3s ease;
-        }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 15px 20px;
+      text-decoration: none;
+      color: #E4E4E7;
+      font-size: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background-color 0.3s ease;
+    }
 
-        .toggle-btn i {
-            font-size: 18px;
-        }
+    .sidebar a i {
+      margin-right: 10px;
+      font-size: 18px;
+    }
 
-        @media screen and (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -250px;
-                top: 0;
-                height: 100%;
-                width: 250px;
-                z-index: 999;
-                transition: left 0.3s ease;
-            }
+    .sidebar a:hover {
+      background-color: #4CAF50;
+      color: #FFFFFF;
+    }
 
-            .sidebar.aberto {
-                left: 0;
-            }
+    .toggle-btn {
+      position: absolute;
+      top: 20px;
+      left: 250px;
+      z-index: 1000;
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px;
+      border-radius: 0 5px 5px 0;
+      cursor: pointer;
+      transition: left 0.3s ease;
+    }
 
-            iframe {
-                width: 100%;
-                margin-left: 0;
-            }
+    .toggle-btn i {
+      font-size: 18px;
+    }
 
-            .toggle-btn {
-                left: 0;
-                top: 10px;
-                z-index: 1000;
-            }
-        }
+    iframe {
+      flex: 1;
+      width: 100%;
+      height: 100vh;
+      border: none;
+      transition: margin-left 0.3s ease;
+    }
 
-        @media screen and (max-width: 480px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
-            }
+    /* Responsividade */
+    @media (max-width: 768px) {
+      .toggle-btn {
+        left: 0;
+      }
 
-            iframe {
-                margin: 0;
-                width: 100%;
-            }
+      .sidebar {
+        position: absolute;
+        height: 100%;
+        z-index: 999;
+      }
 
-            .logo img {
-                max-width: 60%;
-            }
+      .sidebar.hidden {
+        transform: translateX(-100%);
+      }
 
-            .toggle-btn {
-                left: 0;
-                top: 10px;
-            }
-        }
-    </style>
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .container {
+        flex-direction: column;
+      }
+
+      iframe {
+        height: calc(100vh - 50px);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar a {
+        font-size: 14px;
+        padding: 12px;
+      }
+
+      .logo img {
+        max-width: 70%;
+      }
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Botão para esconder/mostrar o menu -->
-    <div class="toggle-btn" onclick="toggleMenu()">
-        <i class="fas fa-angle-left"></i>
-    </div>
+  <!-- Botão para esconder/mostrar o menu -->
+  <div class="toggle-btn" onclick="toggleMenu()">
+    <i class="fas fa-angle-left"></i>
+  </div>
 
-    <!-- Menu Lateral -->
-    <div class="sidebar">
-        <div class="logo">
-            <img src="img/logo.png" alt="Logo do Programa">
-        </div>
-        <a href="cadastromateriais.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-tools"></i>Cadastro de Materiais e Serviços</a>
-        <a href="cadastroclientes.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-user-friends"></i>Cadastro de Clientes</a>
-        <a href="clientes.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-address-book"></i>Tela do Cliente</a>
-        <a href="telaorcamento.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-file-invoice-dollar"></i>Tela de Orçamentos</a>
-        <a href="pedidos.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-shopping-cart"></i>Tela de Pedidos</a>
-        <a href="calendariorecebimentos.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-calendar-check"></i>Calendário de Recebimentos</a>
-        <a href="calendariopagamentos.html" target="conteudo" onclick="fecharMenuSeMobile()"><i class="fas fa-calendar-alt"></i>Calendário de Contas a Pagar</a>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="logo">
+        <img src="img/logo.png" alt="Logo do Programa">
+      </div>
+      <a href="cadastromateriais.html" target="conteudo"><i class="fas fa-tools"></i>Cadastro de Materiais e Serviços</a>
+      <a href="cadastroclientes.html" target="conteudo"><i class="fas fa-user-friends"></i>Cadastro de Clientes</a>
+      <a href="clientes.html" target="conteudo"><i class="fas fa-address-book"></i>Tela do Cliente</a>
+      <a href="telaorcamento.html" target="conteudo"><i class="fas fa-file-invoice-dollar"></i>Tela de Orçamentos</a>
+      <a href="pedidos.html" target="conteudo"><i class="fas fa-shopping-cart"></i>Tela de Pedidos</a>
+      <a href="calendariorecebimentos.html" target="conteudo"><i class="fas fa-calendar-check"></i>Calendário de Recebimentos</a>
+      <a href="calendariopagamentos.html" target="conteudo"><i class="fas fa-calendar-alt"></i>Calendário de Contas a Pagar</a>
     </div>
 
     <!-- Conteúdo principal -->
     <iframe name="conteudo" src="cadastromateriais.html"></iframe>
+  </div>
 
-    <!-- Script para esconder/mostrar menu -->
-    <script>
-        let menuAberto = false;
+  <!-- Script de alternância -->
+  <script>
+    let menuAberto = true;
 
-        function toggleMenu() {
-            const sidebar = document.querySelector('.sidebar');
-            const toggleBtn = document.querySelector('.toggle-btn');
-            const toggleIcon = toggleBtn.querySelector('i');
-            const iframe = document.querySelector('iframe');
+    function toggleMenu() {
+      const sidebar = document.getElementById('sidebar');
+      const toggleBtn = document.querySelector('.toggle-btn');
+      const toggleIcon = toggleBtn.querySelector('i');
 
-            if (menuAberto) {
-                sidebar.classList.remove('aberto');
-                iframe.style.marginLeft = '0';
-                toggleIcon.classList.remove('fa-angle-left');
-                toggleIcon.classList.add('fa-angle-right');
-            } else {
-                sidebar.classList.add('aberto');
-                iframe.style.marginLeft = '250px';
-                toggleIcon.classList.remove('fa-angle-right');
-                toggleIcon.classList.add('fa-angle-left');
-            }
+      menuAberto = !menuAberto;
 
-            menuAberto = !menuAberto;
-        }
+      if (!menuAberto) {
+        sidebar.classList.add('hidden');
+        toggleIcon.classList.remove('fa-angle-left');
+        toggleIcon.classList.add('fa-angle-right');
+        toggleBtn.style.left = '0';
+      } else {
+        sidebar.classList.remove('hidden');
+        toggleIcon.classList.remove('fa-angle-right');
+        toggleIcon.classList.add('fa-angle-left');
+        toggleBtn.style.left = window.innerWidth <= 768 ? '200px' : '250px';
+      }
+    }
 
-        function fecharMenuSeMobile() {
-            if (window.innerWidth <= 768) {
-                document.querySelector('.sidebar').classList.remove('aberto');
-                document.querySelector('.toggle-btn i').classList.remove('fa-angle-left');
-                document.querySelector('.toggle-btn i').classList.add('fa-angle-right');
-                document.querySelector('iframe').style.marginLeft = '0';
-                menuAberto = false;
-            }
-        }
-    </script>
+    // Ajustar botão ao redimensionar janela
+    window.addEventListener('resize', () => {
+      const toggleBtn = document.querySelector('.toggle-btn');
+      if (menuAberto) {
+        toggleBtn.style.left = window.innerWidth <= 768 ? '200px' : '250px';
+      } else {
+        toggleBtn.style.left = '0';
+      }
+    });
+  </script>
 
 </body>
 </html>
