@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página em Construção</title>
+    <title>Calendário de Pagamentos</title>
     <style>
-        /* Reset básico */
+        /* Reutiliza a maioria dos estilos do calendário de recebimentos */
         * {
             margin: 0;
             padding: 0;
@@ -13,104 +13,1461 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        /* Estilo geral do body */
         body {
-            background-color: #F4F4F9;
+            background-color: #f8f9fa;
+            padding: 10px;
             color: #333;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            padding: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            /* Cor diferente para diferenciar de recebimentos */
+            color: #e74c3c; /* Um vermelho ou laranja para despesas */
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .resumo {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .resumo div {
+            text-align: center;
+            flex: 1;
+        }
+
+        .resumo span {
+            display: block;
+            font-weight: bold;
+        }
+
+        .resumo span:first-child {
+            font-size: 1.2rem;
+            /* Cores para totais de pagamento */
+            color: #e74c3c; /* Vermelho para a pagar */
+        }
+
+        .resumo div:last-child span:first-child {
+             color: #2ecc71; /* Verde para pago */
+        }
+
+        .resumo span:last-child {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .calendar-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 10px;
+        }
+
+        .calendar-controls button {
+            background: #e74c3c; /* Cor do botão de navegação */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .calendar-controls button:hover {
+            background: #c0392b; /* Hover para o botão de navegação */
+        }
+
+        .month-year {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 8px 0;
+            color: #475569;
+            font-size: 0.8rem;
+        }
+
+        .day-cell {
+            min-height: 70px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px;
+            font-size: 0.85rem;
+            background: white;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .day-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .day-cell.today {
+            border: 2px solid #e74c3c; /* Borda do dia atual */
+        }
+
+         /* Classes para status dos pagamentos (ajustadas as cores) */
+        .day-cell.past-due {
+            background: #fff1f2; /* Fundo vermelho claro */
+            border-color: #fecaca; /* Borda vermelha clara */
+        }
+
+        .day-cell.all-paid {
+            background: #f0fdf4; /* Fundo verde claro */
+            border-color: #bbf7d0; /* Borda verde clara */
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 2px;
+            text-align: right;
+            color: #334155;
+        }
+
+        .payment-count {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 4px;
+            padding: 3px;
+            background: rgba(0,0,0,0.03);
+            border-radius: 4px;
+            color: #475569;
+        }
+
+        .add-payment {
+            background: #e74c3c; /* Cor do botão adicionar */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .add-payment:hover {
+            background: #c0392b; /* Hover do botão adicionar */
+        }
+
+        /* Estilos gerais de modal (reutilizados) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            text-align: center;
-            padding: 10px;
+            overflow-y: auto;
         }
 
-        /* Container */
-        .container {
-            background-color: #FFFFFF;
-            padding: 30px;
+        .modal-content {
+            background: white;
+            padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+             max-height: 90vh;
+             overflow-y: auto;
+        }
+
+        .modal h2 {
+            margin-bottom: 15px;
+            text-align: center;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+
+        .modal label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .modal input, .modal select {
             width: 100%;
-        }
-
-        /* Título */
-        h1 {
-            font-size: 2.5rem;
-            color: #5A9EDB;
-            margin-bottom: 20px;
-        }
-
-        /* Texto */
-        p {
-            font-size: 1.2rem;
-            color: #555;
-            margin-bottom: 20px;
-        }
-
-        /* Ícone ou imagem */
-        .icon {
-            font-size: 5rem;
-            color: #5A9EDB;
-            margin-bottom: 20px;
-        }
-
-        /* Botão */
-        .btn {
-            background-color: #5A9EDB;
-            color: #FFF;
-            text-decoration: none;
-            padding: 12px 20px;
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
+            font-size: 0.95rem;
+            transition: border 0.2s;
+        }
+
+        .modal input:focus, .modal select:focus {
+            outline: none;
+            border-color: #e74c3c; /* Cor de foco */
+            box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            flex: 1;
+            transition: all 0.2s;
+        }
+
+        .save-btn {
+            background: #e74c3c; /* Cor do botão salvar */
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #c0392b; /* Hover do botão salvar */
+        }
+
+        .cancel-btn {
+            background: #64748b; /* Cor do botão cancelar */
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background: #475569; /* Hover do botão cancelar */
+        }
+
+        /* Modal de detalhes do dia (reutilizado com ajustes de cor) */
+        .day-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .day-details-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .day-details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .day-details-header h2 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            margin: 0;
+        }
+
+        .day-details-header button {
+            background: #64748b; /* Cor do botão fechar detalhes */
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .day-payment {
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            background: #f8fafc;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+             border-left: 4px solid #e74c3c; /* Borda padrão para pagamento */
+        }
+
+         /* Classes para status dos pagamentos (ajustadas as cores) */
+        .day-payment.paid {
+            background: #f0fdf4; /* Fundo verde claro */
+            border-left: 4px solid #2ecc71; /* Borda verde */
+        }
+
+        .day-payment.past-due {
+            background: #fff1f2; /* Fundo vermelho claro */
+            border-left: 4px solid #e74c3c; /* Borda vermelha */
+        }
+
+        .day-payment h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
             font-size: 1rem;
-            font-weight: bold;
-            transition: background-color 0.3s ease;
-            display: inline-block;
         }
 
-        .btn:hover {
-            background-color: #497FB5;
+        .day-payment p {
+            margin: 4px 0;
+            font-size: 0.9rem;
+            color: #475569;
         }
 
-        /* Responsividade */
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
+        .day-payment p strong {
+            color: #334155;
+        }
+
+
+        /* Estilos dos botões de ação (reutilizados com ajustes de cor) */
+        .payment-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .payment-actions button {
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-width: fit-content;
+        }
+
+         /* Botão de marcar como pago (verde) */
+        .btn-pago {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-pago:hover {
+            background: #27ae60;
+        }
+
+         /* Botão de WhatsApp (pode não ser necessário para pagamentos, mas mantido caso queira notificar fornecedor) */
+        .btn-whatsapp {
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-whatsapp:hover {
+            background: #1da851;
+        }
+
+         /* Botão de editar (azul) */
+        .btn-editar {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-editar:hover {
+            background: #2563eb;
+        }
+
+         /* Botão de excluir (vermelho) */
+        .btn-excluir {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-excluir:hover {
+            background: #c0392b;
+        }
+
+
+        /* Ícones nos botões */
+        .payment-actions button i {
+            margin-right: 5px;
+            font-size: 0.9em;
+        }
+
+         /* Estilos para o Modal do Balancete (novo modal) */
+        .balancete-modal .modal-content {
+            max-width: 600px;
+        }
+
+        .balancete-modal h2 {
+            margin-bottom: 20px;
+        }
+
+        .balancete-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .balancete-summary p {
+            margin: 8px 0;
+            font-size: 1rem;
+            color: #333;
+        }
+
+         .balancete-summary .total-recebido {
+             color: #2ecc71; /* Verde */
+             font-weight: bold;
+             font-size: 1.1rem;
+         }
+
+         .balancete-summary .total-pago {
+             color: #e74c3c; /* Vermelho */
+             font-weight: bold;
+             font-size: 1.1rem;
+         }
+
+         .balancete-summary .saldo {
+             font-weight: bold;
+             font-size: 1.2rem;
+             margin-top: 15px;
+             padding-top: 10px;
+             border-top: 1px dashed #ccc;
+         }
+
+         .balancete-summary .saldo.positivo {
+             color: #2ecc71; /* Verde para saldo positivo */
+         }
+
+          .balancete-summary .saldo.negativo {
+             color: #e74c3c; /* Vermelho para saldo negativo */
+          }
+
+
+         .close-modal-btn { /* Botão fechar genérico para modais */
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+
+        .close-modal-btn:hover {
+            background: #475569;
+        }
+
+
+        /* Responsividade para mobile (reutilizada) */
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
             }
 
-            p {
+            h1 {
+                font-size: 1.3rem;
+            }
+
+            .resumo {
+                padding: 10px;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .resumo div {
+                text-align: left;
+                padding: 8px;
+                background: rgba(255,255,255,0.7);
+                border-radius: 8px;
+            }
+
+            .calendar-controls button {
+                padding: 6px 10px;
+                font-size: 0.9rem;
+            }
+
+            .month-year {
                 font-size: 1rem;
             }
 
-            .icon {
-                font-size: 4rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.8rem;
+            .day-header {
+                font-size: 0.7rem;
+                padding: 6px 0;
             }
 
-            p {
+            .day-cell {
+                min-height: 60px;
+                padding: 4px;
+                font-size: 0.8rem;
+            }
+
+            .day-number {
+                font-size: 0.8rem;
+            }
+
+            .payment-count {
+                font-size: 0.65rem;
+                padding: 2px;
+            }
+
+            .add-payment {
+                padding: 12px;
+                font-size: 0.95rem;
+            }
+
+            .modal-content {
+                padding: 15px;
+            }
+
+            .modal h2 {
+                font-size: 1.2rem;
+            }
+
+            .modal input, .modal select {
+                padding: 10px;
                 font-size: 0.9rem;
             }
 
-            .btn {
-                font-size: 0.9rem;
-                padding: 10px 15px;
+            .modal-buttons {
+                flex-direction: column;
             }
+
+            .day-details-content {
+                padding: 15px;
+            }
+
+            .day-payment {
+                padding: 10px;
+            }
+
+            .day-payment h3 {
+                font-size: 0.95rem;
+            }
+
+            .day-payment p {
+                font-size: 0.85rem;
+            }
+
+            .payment-actions {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .payment-actions button {
+                width: 100%;
+                padding: 10px;
+                min-width: auto;
+            }
+
+             .balancete-modal .modal-content {
+                max-width: 95%;
+             }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <div class="icon">🚧</div>
-        <h1>Em Construção</h1>
-        <p>a Lumodev esta trabalhando duro, para trazer algo incrível para você. Por favor, volte mais tarde!</p>
- 
+        <h1>Calendário de Pagamentos</h1>
+
+        <div class="resumo">
+            <div>
+                <span id="total-pendente">R$ 0,00</span>
+                <span>A Pagar (Mês)</span>
+            </div>
+            <div>
+                <span id="total-recebido">R$ 0,00</span>
+                <span>Pago (Mês)</span>
+            </div>
+        </div>
+
+        <div class="calendar-controls">
+            <button id="prev-month">&lt;</button>
+            <div class="month-year" id="current-month">Mês 2023</div>
+            <button id="next-month">&gt;</button>
+        </div>
+
+        <div class="calendar-grid" id="calendar-header">
+            <div class="day-header">Dom</div>
+            <div class="day-header">Seg</div>
+            <div class="day-header">Ter</div>
+            <div class="day-header">Qua</div>
+            <div class="day-header">Qui</div>
+            <div class="day-header">Sex</div>
+            <div class="day-header">Sáb</div>
+        </div>
+
+        <div class="calendar-grid" id="calendar-days"></div>
+
+        <button class="add-payment" id="open-modal">+ Adicionar Pagamento</button>
+         <button id="btn-balancete" style="margin-top:10px; background:#1e293b; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:600; cursor:pointer; width:100%;">
+            ⚖️ Gerar Balancete do Mês
+        </button>
     </div>
+
+    <div class="modal" id="payment-modal">
+        <div class="modal-content">
+            <h2>Novo Pagamento</h2>
+            <form id="payment-form">
+                <label for="descricao">Descrição</label>
+                <input type="text" id="descricao" required>
+
+                <label for="valor">Valor (R$)</label>
+                <input type="number" id="valor" step="0.01" required>
+
+                <label for="data-pagamento">Data de Vencimento</label>
+                <input type="date" id="data-pagamento" required>
+                <label for="recorrencia">Recorrência</label>
+                <select id="recorrencia">
+                    <option value="none">Não repete</option>
+                    <option value="weekly">Semanal</option>
+                    <option value="monthly">Mensal</option>
+                    </select>
+
+                 <label for="fornecedor">Fornecedor (opcional)</label>
+                <input type="text" id="fornecedor">
+
+                <label for="contato-fornecedor">Contato/Detalhes (opcional)</label>
+                 <input type="text" id="contato-fornecedor">
+
+                 <div class="modal-buttons">
+                    <button type="button" class="cancel-btn" id="cancel-payment">Cancelar</button>
+                    <button type="submit" class="save-btn">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="day-details-modal" id="day-details-modal">
+        <div class="day-details-content">
+            <div class="day-details-header">
+                <h2 id="day-details-title">Detalhes do Dia</h2>
+                <button id="close-day-details">X</button>
+            </div>
+            <div id="day-payments-list">
+                 </div>
+        </div>
+    </div>
+
+    <div class="modal balancete-modal" id="balancete-modal">
+        <div class="modal-content">
+            <div class="day-details-header">
+                <h2 id="balancete-title">Balancete Mensal</h2>
+                <button id="close-balancete">X</button>
+            </div>
+            <div id="balancete-summary">
+                <p>Recebimentos do Mês: <span id="balancete-recebido" class="total-recebido">R$ 0,00</span></p>
+                <p>Pagamentos do Mês: <span id="balancete-pago" class="total-pago">R$ 0,00</span></p>
+                <p>Saldo do Mês: <span id="balancete-saldo" class="saldo">R$ 0,00</span></p>
+            </div>
+             <button class="close-modal-btn" id="close-balancete-btn-bottom">Fechar</button>
+        </div>
+    </div>
+
+
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
+            authDomain: "novojsfer.firebaseapp.com",
+            projectId: "novojsfer",
+            storageBucket: "novojsfer.appspot.com",
+            messagingSenderId: "610404413021",
+            appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Variáveis globais
+        let currentDate = new Date();
+        let payments = []; // Lista de pagamentos deste calendário
+
+        // Elementos DOM
+        const calendarDays = document.getElementById('calendar-days');
+        const currentMonthElement = document.getElementById('current-month');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const modal = document.getElementById('payment-modal'); // Modal adicionar/editar
+        const openModalBtn = document.getElementById('open-modal');
+        const cancelModalBtn = document.getElementById('cancel-payment');
+        const paymentForm = document.getElementById('payment-form');
+        const totalPendenteElement = document.getElementById('total-pendente'); // Usado para 'A Pagar' no Resumo
+        const totalRecebidoElement = document.getElementById('total-recebido'); // Usado para 'Pago' no Resumo
+        const dayDetailsModal = document.getElementById('day-details-modal'); // Modal detalhes do dia
+        const dayDetailsTitle = document.getElementById('day-details-title');
+        const dayPaymentsList = document.getElementById('day-payments-list');
+        const closeDayDetailsBtn = document.getElementById('close-day-details');
+        const btnBalancete = document.getElementById('btn-balancete'); // Botão Balancete
+        const balanceteModal = document.getElementById('balancete-modal'); // Modal Balancete
+        const balanceteTitle = document.getElementById('balancete-title');
+        const balanceteRecebidoElement = document.getElementById('balancete-recebido'); // Elemento para Total Recebido no Balancete
+        const balancetePagoElement = document.getElementById('balancete-pago'); // Elemento para Total de Despesas no Balancete
+        const balanceteSaldoElement = document.getElementById('balancete-saldo');
+        const closeBalanceteBtn = document.getElementById('close-balancete'); // Botão fechar Balancete header
+        const closeBalanceteBtnBottom = document.getElementById('close-balancete-btn-bottom'); // Botão fechar Balancete bottom
+
+        // --- Funções Utilitárias ---
+
+        // Função para corrigir o problema de data (garante formato 'YYYY-MM-DD')
+        function ajustarDataParaFirestore(dataString) {
+            if (!dataString) return null;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dataString)) {
+                return dataString;
+            }
+            try {
+                const date = new Date(dataString + 'T00:00:00');
+                if (!isNaN(date.getTime())) {
+                    const year = date.getFullYear();
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+            } catch (e) {
+                console.error("Erro ao ajustar data:", dataString, e);
+            }
+            return null;
+        }
+
+        // Função para exibir data formatada (DD/MM/YYYY)
+        function formatarDataExibicao(dataString) {
+            if (!dataString) return '';
+            const [ano, mes, dia] = dataString.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+         // Função para formatar valores monetários em BRL
+         function formatarValorBRL(valor) {
+             if (isNaN(valor)) return 'R$ 0,00';
+             // Garante que o valor é um número antes de formatar
+             const numero = parseFloat(valor);
+             return `R$ ${numero.toFixed(2).replace('.', ',')}`;
+         }
+
+         // Retorna nome do mês em português
+         function getMonthName(month) {
+             const months = [
+                 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+             ];
+             return months[month];
+         }
+
+        // --- Funções de Carregamento e Manipulação de Dados (Pagamentos) ---
+
+      async function carregarPagamentos() {
+            try {
+                // Buscar pagamentos originais da coleção 'pagamentos'
+                const q = query(collection(db, "pagamentos"), orderBy("dataPagamento"));
+                const querySnapshot = await getDocs(q);
+
+                // Lista para armazenar pagamentos originais do Firebase
+                const originalPayments = [];
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+
+                    if (!data.dataPagamento || typeof data.dataPagamento !== 'string') {
+                        console.warn("Pagamento com data inválida/ausente:", doc.id, data.dataPagamento);
+                        return;
+                    }
+
+                    originalPayments.push({
+                        id: doc.id, // ID do documento no Firebase
+                        descricao: data.descricao || "Sem Descrição",
+                        valor: data.valor || 0,
+                        dataPagamento: data.dataPagamento, // Esperado no formato<\ctrl97>MM-DD
+                        fornecedor: data.fornecedor || null,
+                        contatoFornecedor: data.contatoFornecedor || null,
+                        pago: data.pago || false,
+                        recorrencia: data.recorrencia || 'none', // Campo de recorrência
+                        createdAt: data.createdAt?.toDate() || new Date()
+                    });
+                });
+
+                // Lista para armazenar pagamentos gerados (instâncias futuras)
+                const generatedPayments = [];
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Define um limite de tempo futuro para gerar ocorrências (ex: próximos 12 meses)
+                const futureMonthsLimit = 12;
+                const limitDate = new Date(today.getFullYear(), today.getMonth() + futureMonthsLimit, 0);
+
+
+                // --- Lógica para gerar instâncias futuras ---
+                originalPayments.forEach(payment => {
+                    if (payment.recorrencia === 'weekly') {
+                        // Para recorrência Semanal
+                        let nextDate = new Date(payment.dataPagamento + 'T00:00:00'); // Data de início
+
+                        // *** MUDANÇA AQUI: Avança para a primeira ocorrência SUBSEQUENTE ***
+                        nextDate.setDate(nextDate.getDate() + 7);
+
+                        let count = 0;
+                        // Gera as próximas ocorrências semanais a partir da data SUBSEQUENTE
+                        while (nextDate <= limitDate && count < (futureMonthsLimit * 4)) { // Gera por aprox 12 meses
+                            // Adiciona a instância gerada
+                            generatedPayments.push({
+                                id: `generated-${payment.id}-${nextDate.toISOString().substring(0, 10)}`,
+                                originalId: payment.id,
+                                isGenerated: true,
+                                descricao: payment.descricao,
+                                valor: payment.valor,
+                                dataPagamento: nextDate.toISOString().substring(0, 10),
+                                fornecedor: payment.fornecedor,
+                                contatoFornecedor: payment.contatoFornecedor,
+                                pago: false,
+                                recorrencia: 'none',
+                                createdAt: payment.createdAt
+                            });
+                            // Calcula a próxima data (adiciona 7 dias)
+                            nextDate.setDate(nextDate.getDate() + 7);
+                            count++;
+                        }
+
+                    } else if (payment.recorrencia === 'monthly') {
+                         // Para recorrência Mensal
+                         let nextDate = new Date(payment.dataPagamento + 'T00:00:00'); // Data de início
+
+                         // *** MUDANÇA AQUI: Avança para a primeira ocorrência SUBSEQUENTE ***
+                         const currentDayOfMonth = nextDate.getDate();
+                         nextDate.setMonth(nextDate.getMonth() + 1);
+                         if (nextDate.getDate() !== currentDayOfMonth) {
+                             nextDate.setDate(0); // Lida com meses com dias diferentes
+                         }
+                         // Agora 'nextDate' é a data da primeira ocorrência no próximo mês
+
+                         let count = 0;
+                         // Gera as próximas ocorrências mensais a partir da data SUBSEQUENTE
+                         while (nextDate <= limitDate && count < futureMonthsLimit) { // Gera para os próximos 12 meses
+
+                            // Clona a data para não modificar a original na iteração
+                            let currentMonthInstanceDate = new Date(nextDate);
+
+                            // Adiciona a instância gerada
+                             generatedPayments.push({
+                                id: `generated-${payment.id}-${currentMonthInstanceDate.toISOString().substring(0, 10)}`,
+                                originalId: payment.id,
+                                isGenerated: true,
+                                descricao: payment.descricao,
+                                valor: payment.valor,
+                                dataPagamento: currentMonthInstanceDate.toISOString().substring(0, 10),
+                                fornecedor: payment.fornecedor,
+                                contatoFornecedor: payment.contatoFornecedor,
+                                pago: false,
+                                recorrencia: 'none',
+                                createdAt: payment.createdAt
+                             });
+
+                            // Calcula a próxima data (adiciona 1 mês, mantendo o dia)
+                            const dayToKeep = nextDate.getDate(); // Salva o dia atual antes de adicionar o mês
+                            nextDate.setMonth(nextDate.getMonth() + 1);
+                             // Corrige o dia se o novo mês for mais curto
+                            if (nextDate.getDate() !== dayToKeep) {
+                                nextDate = new Date(nextDate.getFullYear(), nextDate.getMonth(), 0); // Vai para o último dia do mês anterior
+                             }
+
+                            count++;
+                         }
+                    }
+                });
+                // --- Fim da lógica de geração ---
+
+
+                // Combina pagamentos originais e gerados
+                // Filtra instâncias geradas que são anteriores ao início do mês atual visualizado
+                 const filteredGeneratedPayments = generatedPayments.filter(p => {
+                     const paymentDate = new Date(p.dataPagamento + 'T00:00:00');
+                     // Remove ocorrências geradas que são anteriores ao mês atual visualizado
+                     return paymentDate >= new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+                 });
+
+                payments = [...originalPayments, ...filteredGeneratedPayments]; // Junta as duas listas
+
+                 // Opcional: Ordenar a lista 'payments' pela data, se necessário (já estava no código anterior)
+                 payments.sort((a, b) => new Date(a.dataPagamento) - new Date(b.dataPagamento));
+
+
+                atualizarCalendario(); // Atualiza UI com TODOS os dados (originais + gerados)
+            } catch (error) {
+                console.error("Erro ao carregar e gerar pagamentos:", error);
+                // alert("Erro ao carregar pagamentos. Verifique o console para detalhes."); // Pode remover em produção
+            }
+        }
+        async function adicionarPagamento() {
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const dataInput = document.getElementById('data-pagamento').value;
+            const dataCorrigida = ajustarDataParaFirestore(dataInput);
+            const fornecedor = document.getElementById('fornecedor').value.trim();
+            const contatoFornecedor = document.getElementById('contato-fornecedor').value.trim();
+            const recorrencia = document.getElementById('recorrencia').value; // <<--- Pega valor do select de recorrência
+
+
+            if (!descricao || !descricao.trim()) {
+                alert("Informe uma descrição válida!");
+                return;
+            }
+
+            if (isNaN(valor) || valor <= 0) {
+                alert("Informe um valor válido maior que zero!");
+                return;
+            }
+
+            if (!dataCorrigida) {
+                alert("Data de vencimento inválida!");
+                return;
+            }
+
+            try {
+                // Adiciona na coleção 'pagamentos'
+                await addDoc(collection(db, "pagamentos"), {
+                    descricao: descricao.trim(),
+                    valor: valor,
+                    dataPagamento: dataCorrigida,
+                    fornecedor: fornecedor || null,
+                    contatoFornecedor: contatoFornecedor || null,
+                    pago: false,
+                    recorrencia: recorrencia, // <<--- Salva o campo recorrência
+                    createdAt: new Date()
+                });
+
+                modal.style.display = 'none';
+                paymentForm.reset();
+                 // Redefine o select de recorrência para o padrão após salvar/cancelar
+                document.getElementById('recorrencia').value = 'none';
+                await carregarPagamentos(); // Recarrega e atualiza
+                alert(`Pagamento adicionado para ${formatarDataExibicao(dataCorrigida)} com sucesso!`);
+            } catch (error) {
+                console.error("Erro ao adicionar pagamento:", error);
+                alert("Erro ao adicionar pagamento");
+            }
+        }
+
+        // Preenche o modal de edição com dados do pagamento selecionado
+        window.editarPagamento = function(paymentId) {
+             // Encontra o pagamento na lista global
+            const pagamento = payments.find(p => p.id === paymentId);
+            if (!pagamento) {
+                alert("Pagamento não encontrado para edição.");
+                return;
+            }
+
+            // Preenche o formulário com os dados do pagamento
+            document.getElementById('descricao').value = pagamento.descricao;
+            document.getElementById('valor').value = pagamento.valor;
+            document.getElementById('data-pagamento').value = pagamento.dataPagamento; // Espera YYYY-MM-DD
+            document.getElementById('fornecedor').value = pagamento.fornecedor || '';
+            document.getElementById('contato-fornecedor').value = pagamento.contatoFornecedor || '';
+            document.getElementById('recorrencia').value = pagamento.recorrencia || 'none'; // <<--- Preenche o campo recorrência
+
+
+            // Altera o título do modal e armazena o ID para salvar a edição
+            document.querySelector('#payment-modal h2').textContent = 'Editar Pagamento';
+            paymentForm.setAttribute('data-editar-id', paymentId);
+
+            // Exibe o modal de adicionar/editar
+            modal.style.display = 'flex';
+            dayDetailsModal.style.display = 'none'; // Esconde o modal de detalhes se estiver aberto
+        };
+
+
+        // Salva as alterações de um pagamento editado no Firebase
+        async function salvarEdicao(id) {
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const dataPagamento = ajustarDataParaFirestore(document.getElementById('data-pagamento').value);
+            const fornecedor = document.getElementById('fornecedor').value.trim();
+            const contatoFornecedor = document.getElementById('contato-fornecedor').value.trim();
+            const recorrencia = document.getElementById('recorrencia').value; // <<--- Pega valor do select de recorrência
+
+
+            // Validações (simplificadas)
+            if (!descricao || isNaN(valor) || !dataPagamento) {
+                alert("Preencha os campos obrigatórios corretamente.");
+                return;
+            }
+
+            try {
+                const paymentRef = doc(db, "pagamentos", id); // Referencia o documento na coleção 'pagamentos'
+                await updateDoc(paymentRef, {
+                    descricao: descricao.trim(),
+                    valor: valor,
+                    dataPagamento: dataPagamento,
+                    fornecedor: fornecedor || null,
+                    contatoFornecedor: contatoFornecedor || null,
+                    recorrencia: recorrencia // <<--- Atualiza o campo recorrência
+                    // Não altera o status 'pago' ou 'createdAt' aqui
+                });
+
+                modal.style.display = 'none'; // Esconde o modal
+                paymentForm.reset(); // Reseta o formulário
+                paymentForm.removeAttribute('data-editar-id'); // Remove o ID de edição
+                document.querySelector('#payment-modal h2').textContent = 'Novo Pagamento'; // Restaura o título
+                 // Redefine o select de recorrência para o padrão
+                 document.getElementById('recorrencia').value = 'none';
+                await carregarPagamentos(); // Recarrega e atualiza tudo
+                alert("Pagamento atualizado com sucesso!");
+            } catch (error) {
+                console.error("Erro ao salvar edição:", error);
+                alert("Erro ao salvar edição.");
+            }
+        }
+
+
+        // Marcar pagamento como pago no Firebase
+        window.marcarComoPago = async function(paymentId) {
+            if (confirm("Deseja marcar este pagamento como pago?")) {
+                try {
+                    const paymentRef = doc(db, "pagamentos", paymentId); // Referencia o documento na coleção 'pagamentos'
+                    await updateDoc(paymentRef, {
+                        pago: true
+                    });
+                    await carregarPagamentos(); // Recarrega e atualiza tudo
+                     // Fecha o modal de detalhes se estiver aberto e o pagamento marcado como pago pertencer a ele
+                    if (dayDetailsModal.style.display === 'flex') {
+                         // Poderia adicionar lógica para recarregar os detalhes do dia ou fechar o modal
+                         // Simplificado: apenas fecha o modal de detalhes
+                         dayDetailsModal.style.display = 'none';
+                    }
+                    alert("Pagamento marcado como pago!");
+                } catch (error) {
+                    console.error("Erro ao atualizar pagamento:", error);
+                    alert("Erro ao marcar como pago");
+                }
+            }
+        }
+
+        // Excluir pagamento do Firebase
+        window.excluirPagamento = async function(paymentId) {
+            if (confirm("Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita.")) {
+                try {
+                    await deleteDoc(doc(db, "pagamentos", paymentId)); // Exclui da coleção 'pagamentos'
+                    await carregarPagamentos(); // Recarrega e atualiza tudo
+                     // Fecha o modal de detalhes se estiver aberto e o pagamento excluído pertencer a ele
+                    if (dayDetailsModal.style.display === 'flex') {
+                         // Poderia adicionar lógica para recarregar os detalhes do dia ou fechar o modal
+                         // Simplificado: apenas fecha o modal de detalhes
+                         dayDetailsModal.style.display = 'none';
+                    }
+                    alert("Pagamento excluído com sucesso!");
+                } catch (error) {
+                    console.error("Erro ao excluir pagamento:", error);
+                    alert("Erro ao excluir");
+                }
+            }
+        }
+
+         // Remover a função cobrarViaWhatsapp, pois não se aplica a pagamentos
+         // window.cobrarViaWhatsapp = function(payment) { ... }
+
+
+        // --- Funções de UI e Calendário ---
+
+        // Atualiza calendário visualmente
+        function atualizarCalendario() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            currentMonthElement.textContent = `${getMonthName(month)} de ${year}`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            const startDay = firstDay.getDay();
+            const totalDays = lastDay.getDate();
+
+            calendarDays.innerHTML = '';
+
+            // Preenche dias vazios no início
+            for (let i = 0; i < startDay; i++) {
+                calendarDays.appendChild(criarDiaVazio());
+            }
+
+            // Preenche os dias do mês
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            for (let day = 1; day <= totalDays; day++) {
+                const date = new Date(year, month, day);
+                // Cria string da data no formato YYYY-MM-DD para comparação
+                const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+                 // Filtra pagamentos apenas para este dia
+                const dayPayments = payments.filter(p => {
+                    return p.dataPagamento === dateString;
+                });
+
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day-cell';
+
+                // Adiciona classe 'today'
+                if (date.toDateString() === today.toDateString()) {
+                    dayElement.classList.add('today');
+                }
+
+                // Verifica status dos pagamentos para classes CSS (Past Due e All Paid)
+                const hasPastDue = dayPayments.some(p => !p.pago && new Date(p.dataPagamento + 'T00:00:00') < today);
+                const allPaid = dayPayments.length > 0 && dayPayments.every(p => p.pago);
+
+                if (hasPastDue) {
+                    dayElement.classList.add('past-due');
+                } else if (allPaid) {
+                    dayElement.classList.add('all-paid');
+                }
+
+                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
+
+                // Adiciona contagem de pagamentos se houver
+                if (dayPayments.length > 0) {
+                    const paymentCount = document.createElement('div');
+                    paymentCount.className = 'payment-count';
+                    paymentCount.textContent = `${dayPayments.length} pg.`; // Texto ajustado para 'pg.'
+                    dayElement.appendChild(paymentCount);
+                }
+
+                // Adiciona evento de clique para mostrar detalhes do dia
+                dayElement.addEventListener('click', () => {
+                    mostrarDetalhesDia(date, dayPayments);
+                });
+
+                calendarDays.appendChild(dayElement);
+            }
+
+            // Preenche dias vazios no final
+            const daysInGrid = calendarDays.children.length;
+            const remainingCells = daysInGrid % 7 === 0 ? 0 : 7 - (daysInGrid % 7);
+
+             for (let i = 0; i < remainingCells; i++) {
+                calendarDays.appendChild(criarDiaVazio());
+            }
+
+             atualizarResumo(); // Atualiza o resumo após renderizar o calendário
+        }
+
+
+        // Cria um elemento div para um dia vazio
+        function criarDiaVazio() {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'day-cell';
+            emptyDay.style.visibility = 'hidden';
+            emptyDay.style.pointerEvents = 'none';
+            return emptyDay;
+        }
+
+        // Mostra detalhes de todos os pagamentos de um dia específico em um modal
+        function mostrarDetalhesDia(date, dayPayments) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dayDetailsTitle.textContent = `Detalhes para ${date.toLocaleDateString('pt-BR', options)}`;
+            dayPaymentsList.innerHTML = '';
+
+            if (dayPayments.length === 0) {
+                dayPaymentsList.innerHTML = '<p style="text-align: center; color: #64748b;">Nenhum pagamento para este dia.</p>';
+            } else {
+                // Ordena os pagamentos do dia: atrasados primeiro, depois pendentes, depois pagos
+                dayPayments.sort((a, b) => {
+                    const aDate = new Date(a.dataPagamento + 'T00:00:00');
+                    const bDate = new Date(b.dataPagamento + 'T00:00:00');
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+
+                    // 0: Atrasado, 1: Pendente, 2: Pago
+                    const aStatus = a.pago ? 2 : aDate < today ? 0 : 1;
+                    const bStatus = b.pago ? 2 : bDate < today ? 0 : 1;
+
+                    if (aStatus !== bStatus) {
+                        return aStatus - bStatus;
+                    } else {
+                        return aDate.getTime() - bDate.getTime();
+                    }
+                });
+
+
+                dayPayments.forEach(payment => {
+                    const paymentDate = new Date(payment.dataPagamento + 'T00:00:00');
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const isPastDue = !payment.pago && paymentDate < today;
+
+                    const paymentElement = document.createElement('div');
+                    paymentElement.className = `day-payment ${payment.pago ? 'paid' : isPastDue ? 'past-due' : ''}`;
+
+                    paymentElement.innerHTML = `
+                        <h3>${payment.descricao}</h3>
+                        <p><strong>Valor:</strong> ${formatarValorBRL(payment.valor)}</p>
+                        ${payment.fornecedor ? `<p><strong>Fornecedor:</strong> ${payment.fornecedor}</p>` : ''}
+                         ${payment.contatoFornecedor ? `<p><strong>Contato:</strong> ${payment.contatoFornecedor}</p>` : ''}
+                        <p><strong>Recorrência:</strong> ${payment.recorrencia === 'monthly' ? 'Mensal' : payment.recorrencia === 'weekly' ? 'Semanal' : 'Não repete'}</p> <p><strong>Status:</strong> ${payment.pago ? 'Pago' : isPastDue ? 'Atrasado' : 'Pendente'}</p>
+                        <p><strong>Vencimento:</strong> ${formatarDataExibicao(payment.dataPagamento)}</p>
+
+                        <div class="payment-actions">
+                            ${!payment.pago ? `
+                                <button class="btn-pago" onclick="marcarComoPago('${payment.id}')">
+                                    <i class="fas fa-check-circle"></i> Pago
+                                </button>
+                                <button class="btn-editar" onclick="editarPagamento('${payment.id}')">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn-excluir" onclick="excluirPagamento('${payment.id}')">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </button>
+                                 ` : `
+                                 <button class="btn-excluir" onclick="excluirPagamento('${payment.id}')">
+                                     <i class="fas fa-trash-alt"></i> Excluir
+                                 </button>
+                             `}
+                        </div>
+                    `;
+
+                    dayPaymentsList.appendChild(paymentElement);
+                });
+            }
+
+            dayDetailsModal.style.display = 'flex';
+        }
+
+        // Função para Gerar Balancete (AGORA CORRIGIDA)
+        async function gerarBalancete() {
+             const year = currentDate.getFullYear();
+             const month = currentDate.getMonth(); // 0-indexed
+
+             balanceteTitle.textContent = `Balancete de ${getMonthName(month)} de ${year}`;
+
+             let totalRecebidoMes = 0; // Total de recebimentos *pagos* no mês
+             let totalDespesasMes = 0; // Total de despesas (pagas + pendentes) no mês
+
+             // 1. Calcular Total de Despesas do mês atual (pagas + pendentes)
+             try {
+                 // Filtra na lista global 'payments' que é carregada inicialmente da coleção 'pagamentos'.
+                 const paymentsThisMonth = payments.filter(p => {
+                    // Garante que dataPagamento existe e é uma string antes de tentar dividir
+                    if (!p.dataPagamento || typeof p.dataPagamento !== 'string') return false;
+                    const [ano, mesStr] = p.dataPagamento.split('-');
+                    // Note: parseInt(mesStr) é 1-indexed, por isso subtraímos 1 para comparar com month (0-indexed)
+                    return parseInt(ano) === year && (parseInt(mesStr) - 1) === month;
+                 });
+
+                 // Calcula o total de todas as despesas deste mês, INDEPENDENTE do status 'pago'
+                 paymentsThisMonth.forEach(payment => {
+                     totalDespesasMes += payment.valor;
+                 });
+
+             } catch (error) {
+                 console.error("Erro ao processar pagamentos para balancete:", error);
+                 // Opcional: Adicionar uma mensagem de erro na UI para o usuário
+             }
+
+             // 2. Buscar Total de Recebimentos Pagos do mês atual (da coleção 'recebimentos')
+             try {
+                 // Faz uma consulta específica à coleção 'recebimentos'.
+                 const qRecebimentos = query(collection(db, "recebimentos"), orderBy("dataPagamento"));
+                 const querySnapshotRecebimentos = await getDocs(qRecebimentos);
+
+                 const recebimentosThisMonth = [];
+                 querySnapshotRecebimentos.forEach(doc => {
+                     const data = doc.data();
+                     // Garante que dataPagamento existe e é uma string no formato YYYY-MM-DD
+                     if (data.dataPagamento && typeof data.dataPagamento === 'string') {
+                         const [ano, mesStr] = data.dataPagamento.split('-');
+                          // Note: parseInt(mesStr) é 1-indexed, por isso subtraímos 1 para comparar com month (0-indexed)
+                         if (parseInt(ano) === year && (parseInt(mesStr) - 1) === month) {
+                             recebimentosThisMonth.push(data);
+                         }
+                     }
+                 });
+
+                 // Calcula total recebido dos recebimentos deste mês (apenas os pagos)
+                 recebimentosThisMonth.forEach(recebimento => {
+                      if (recebimento.pago) { // Continua considerando APENAS recebimentos que foram marcados como pagos
+                         totalRecebidoMes += recebimento.valor;
+                     }
+                 });
+
+             } catch (error) {
+                 console.error("Erro ao buscar recebimentos para balancete:", error);
+                 // Opcional: Adicionar uma mensagem de erro na UI para o usuário
+             }
+
+             // 3. Calcular Saldo (Recebimentos Pagos - Total de Despesas)
+             const saldo = totalRecebidoMes - totalDespesasMes; // Cálculo ajustado
+
+             // 4. Atualiza os elementos no modal do balancete
+             balanceteRecebidoElement.textContent = formatarValorBRL(totalRecebidoMes); // Mostra total recebido pago
+             balancetePagoElement.textContent = formatarValorBRL(totalDespesasMes);    // Mostra total de despesas (pagas + pendentes)
+             balanceteSaldoElement.textContent = formatarValorBRL(saldo);
+
+             // Adiciona classe para estilizar o saldo (verde/vermelho)
+             balanceteSaldoElement.classList.remove('positivo', 'negativo');
+             if (saldo > 0) {
+                 balanceteSaldoElement.classList.add('positivo');
+             } else if (saldo < 0) {
+                 balanceteSaldoElement.classList.add('negativo');
+             }
+
+             // Exibe o modal do balancete
+             balanceteModal.style.display = 'flex';
+        }
+
+
+        // Atualiza o resumo financeiro na parte superior (SOMENTE para o mês atual)
+        function atualizarResumo() {
+            let totalPendenteMes = 0; // 'A Pagar'
+            let totalPagoMes = 0;    // 'Pago'
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth(); // Month is 0-indexed
+
+            // Filtra pagamentos para incluir APENAS os do mês atual
+            const paymentsThisMonth = payments.filter(payment => {
+                // Garante que dataPagamento existe e é uma string antes de tentar dividir
+                if (!payment.dataPagamento || typeof payment.dataPagamento !== 'string') {
+                    return false;
+                }
+                const [ano, mes, dia] = payment.dataPagamento.split('-');
+                return parseInt(ano) === year && (parseInt(mes) - 1) === month;
+            });
+
+            paymentsThisMonth.forEach(payment => {
+                if (payment.pago) {
+                    totalPagoMes += payment.valor;
+                } else {
+                    totalPendenteMes += payment.valor;
+                }
+            });
+
+             // Formata e exibe os totais no resumo superior
+            totalPendenteElement.textContent = formatarValorBRL(totalPendenteMes); // 'A Pagar'
+            totalRecebidoElement.textContent = formatarValorBRL(totalPagoMes);    // 'Pago'
+        }
+
+
+        // --- Inicialização ---
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarPagamentos(); // Carrega os pagamentos ao iniciar
+
+            // Listeners para navegação do calendário
+            prevMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                atualizarCalendario(); // Atualiza calendário e resumo
+            });
+
+            nextMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                atualizarCalendario(); // Atualiza calendário e resumo
+            });
+
+            // Listener para abrir modal de adicionar pagamento
+            openModalBtn.addEventListener('click', () => {
+                modal.style.display = 'flex';
+                // Define a data atual como padrão
+                const hoje = new Date();
+                const dataFormatada = hoje.toISOString().substring(0, 10);
+                document.getElementById('data-pagamento').value = dataFormatada;
+                 // Limpa os campos de fornecedor e define recorrência padrão ao abrir para adicionar
+                document.getElementById('fornecedor').value = '';
+                document.getElementById('contato-fornecedor').value = '';
+                document.getElementById('recorrencia').value = 'none'; // <<--- Define padrão 'Não repete'
+                 // Restaura o título do modal
+                 document.querySelector('#payment-modal h2').textContent = 'Novo Pagamento';
+                 // Remove qualquer ID de edição anterior
+                 paymentForm.removeAttribute('data-editar-id');
+            });
+
+            // Listener para cancelar modal de adicionar/editar
+            cancelModalBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+                paymentForm.reset();
+                paymentForm.removeAttribute('data-editar-id');
+                document.querySelector('#payment-modal h2').textContent = 'Novo Pagamento';
+                 // Limpa os campos de fornecedor e define recorrência padrão ao cancelar
+                 document.getElementById('fornecedor').value = '';
+                 document.getElementById('contato-fornecedor').value = '';
+                 document.getElementById('recorrencia').value = 'none'; // <<--- Define padrão 'Não repete'
+            });
+
+            // Listener para submit do formulário (adicionar ou editar)
+            paymentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const editingId = paymentForm.getAttribute('data-editar-id');
+                if (editingId) {
+                    await salvarEdicao(editingId);
+                } else {
+                    await adicionarPagamento();
+                }
+            });
+
+            // Listener para fechar modal de detalhes do dia
+            closeDayDetailsBtn.addEventListener('click', () => {
+                dayDetailsModal.style.display = 'none';
+            });
+
+             // Listener para o botão Gerar Balancete
+             btnBalancete.addEventListener('click', () => {
+                 gerarBalancete(); // Chama a função do balancete corrigida
+             });
+
+              // Listeners para fechar o modal do Balancete
+             closeBalanceteBtn.addEventListener('click', () => {
+                 balanceteModal.style.display = 'none';
+             });
+
+             closeBalanceteBtnBottom.addEventListener('click', () => {
+                 balanceteModal.style.display = 'none';
+             });
+
+
+        }); // Fim do DOMContentLoaded
+
+
+    </script>
 </body>
 </html>
