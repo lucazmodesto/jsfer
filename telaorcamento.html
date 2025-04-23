@@ -3,153 +3,485 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/cadastromateriais.css">
-    <title>Tela de Orçamentos</title>
+    <title>Orçamento Profissional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Estilos básicos para melhorar a aparência */
+        :root {
+            --primary-color: #007bff; /* Azul limpo para destaque */
+            --secondary-color: #28a745; /* Verde para sucesso/adição */
+            --danger-color: #dc3545; /* Vermelho para remover/erro */
+            --info-color: #17a2b8; /* Ciano para informações */
+            --dark-color: #343a40; /* Cinza escuro para texto principal */
+            --light-color: #f8f9fa; /* Cinza claro para fundo */
+            --border-color: #ced4da; /* Cor de borda padrão */
+            --card-background: #ffffff; /* Fundo de cards/containers */
+            --shadow-light: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Sombra leve */
+            --shadow-medium: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Sombra média */
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
         }
+
         .container {
-            background-color: white;
-            padding: 20px;
+            background-color: var(--card-background);
+            padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-medium);
             max-width: 1000px;
-            margin: 0 auto;
+            margin: 20px auto;
         }
+
         h1, h2 {
-            color: #333;
+            color: var(--dark-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 500;
         }
-        select, input, button {
-            padding: 8px;
-            margin: 5px 0;
+
+        h1 {
+            font-size: 2em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
-            border: 1px solid #ddd;
+            font-size: 1rem;
+            box-sizing: border-box; /* Inclui padding e borda na largura total */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
         button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 400;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #45a049;
+
+        button i {
+            margin-right: 5px;
         }
+
+        .btn-primary {
+            color: #fff;
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            color: #fff;
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .btn-success {
+            color: #fff;
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-success:hover {
+            color: #fff;
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+         .btn-info {
+            color: #fff;
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+        }
+
+        .btn-info:hover {
+            color: #fff;
+            background-color: #138496;
+            border-color: #117a8b;
+        }
+
+
+        .btn-danger {
+            color: #fff;
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            color: #fff;
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+         .btn-warning { /* Cor para o botão de aprovar */
+             color: #212529;
+             background-color: #ffc107;
+             border-color: #ffc107;
+         }
+         .btn-warning:hover {
+             color: #212529;
+             background-color: #e0a800;
+             border-color: #d39e00;
+         }
+         .btn-warning:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+         }
+
+
+        /* Estilos específicos para a tabela */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
+            margin-top: 20px;
+            box-shadow: var(--shadow-light);
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid var(--border-color);
+            padding: 12px;
             text-align: left;
         }
+
         th {
-            background-color: #f2f2f2;
+            background-color: #e9ecef;
+            font-weight: 500;
+            color: #495057;
         }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--light-color);
+        }
+
+        .table-item-input {
+             width: 95%;
+             padding: 6px;
+             margin: 0;
+             display: inline-block;
+             font-size: 0.9em;
+        }
+
+        /* Estilos para a linha Total Geral */
+        .total-row {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-top: 20px;
+            text-align: right;
+            padding-right: 12px;
+        }
+         .total-row span {
+             color: var(--primary-color);
+         }
+
+
+        /* Estilos para a seção de Busca */
+        .search-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .search-container label {
+             margin-bottom: 5px;
+             width: 100%;
+        }
+
+        .search-container input[type="text"] {
+            flex-grow: 1;
+            padding: 10px 12px;
+            font-size: 1rem;
+            min-width: 100px;
+            margin-bottom: 0;
+        }
+
+        .search-button {
+            padding: 10px 15px;
+            background-color: var(--info-color);
+            border-color: var(--info-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+             flex-shrink: 0;
+             margin-bottom: 0;
+        }
+
+        .search-button:hover {
+            background-color: #138496;
+        }
+
+         .search-button i {
+             margin: 0;
+             font-size: 1.1rem;
+         }
+
+         .search-container h2 {
+             margin-bottom: 10px;
+             width: 100%;
+             font-size: 1.3em;
+         }
+
+
+        /* Estilos para a seção Adicionar Itens */
+        .add-item-section {
+             border-bottom: 1px solid var(--border-color);
+             padding-bottom: 20px;
+             margin-bottom: 20px;
+        }
+        .add-item-section > div {
+             display: flex;
+             gap: 10px;
+             align-items: flex-end;
+             margin-bottom: 15px;
+             flex-wrap: wrap;
+        }
+        .add-item-section label {
+             width: 100%;
+             margin-bottom: 5px;
+        }
+         .add-item-section select,
+         .add-item-section input[type="text"],
+         .add-item-section input[type="number"] {
+             flex-grow: 1;
+             margin-bottom: 0;
+         }
+         .add-item-section button {
+             flex-shrink: 0;
+             margin-bottom: 0;
+         }
+
+
+        /* Estilos para a seção de Prazos */
+        .prazo-section {
+             border-bottom: 1px solid var(--border-color);
+             padding-bottom: 20px;
+             margin-bottom: 20px;
+        }
+
+        /* Estilos para a seção de Botões de Ação (Salvar, PDF, WhatsApp) */
         .actions {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
-        #adicionar-item-nao-cadastrado {
-            background-color: #2196F3;
+         .actions button {
+             flex-grow: 1;
+             max-width: 200px;
+             justify-content: center;
+         }
+
+         /* Cor específica para o botão de WhatsApp */
+         .btn-whatsapp {
+             background-color: #25D366;
+             border-color: #25D366;
+         }
+         .btn-whatsapp:hover {
+             background-color: #1da851;
+             border-color: #1da851;
+         }
+
+
+         /* Responsividade básica */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                 font-size: 1.8em;
+            }
+             h2 {
+                 font-size: 1.3em;
+             }
+            th, td {
+                 padding: 8px;
+                 font-size: 0.9em;
+             }
+             .search-container, .add-item-section > div, .actions {
+                 flex-direction: column;
+                 align-items: stretch;
+             }
+             .search-container input[type="text"],
+             .add-item-section select,
+             .add-item-section input[type="text"],
+             .add-item-section input[type="number"],
+             .search-container button,
+             .add-item-section button,
+             .actions button {
+                 width: 100%;
+                 max-width: none;
+                 margin-bottom: 10px;
+             }
+             .search-container label, .add-item-section label {
+                  width: auto;
+             }
+              .search-container button, .add-item-section button {
+                  justify-content: center;
+              }
+               .actions {
+                   gap: 10px;
+               }
         }
-        #adicionar-item-nao-cadastrado:hover {
-            background-color: #0b7dda;
-        }
-        #gerar-pdf {
-            background-color: #f44336;
-        }
-        #gerar-pdf:hover {
-            background-color: #da190b;
-        }
-        #enviar-whatsapp {
-            background-color: #4CAF50;
-        }
-        #enviar-whatsapp:hover {
-            background-color: #45a049;
-        }
+
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Orçamento</h1>
+        <h1>
+            Orçamento
+            <span id="numero-orcamento-exibicao" style="font-size: 0.7em; font-weight: normal; color: #555; margin-left: 10px;"></span>
+        </h1>
+         <div class="search-container">
+            <h2>Buscar Orçamento Existente</h2>
+            <label for="numero-orcamento-busca">Número:</label>
+            <input type="text" id="numero-orcamento-busca" placeholder="Ex: 01">
+            <button id="btn-buscar-orcamento" class="search-button">
+                 <i class="fas fa-search"></i> Buscar
+            </button>
+        </div>
+        <hr style="margin: 20px 0;">
 
-        <!-- Seleção de Cliente -->
         <div>
             <label for="cliente">Selecionar Cliente</label>
             <select id="cliente" required>
                 <option value="">Selecione um cliente...</option>
-                <!-- Clientes serão preenchidos dinamicamente -->
-            </select>
+                </select>
         </div>
 
-        <!-- Adicionar Itens -->
-        <h2>Adicionar Itens</h2>
-        <div>
-            <label for="itens-cadastrados">Materiais/Serviços Cadastrados</label>
-            <select id="itens-cadastrados">
-                <option value="">Selecione um item...</option>
-                <!-- Itens serão preenchidos dinamicamente -->
-            </select>
-            <button id="adicionar-item-cadastrado">Adicionar Item Selecionado</button>
-        </div>
-        <div>
-            <button id="adicionar-item-nao-cadastrado">Adicionar Item Não Cadastrado</button>
+       
+
+
+        <div class="add-item-section">
+            <h2>Adicionar Itens</h2>
+            <div>
+                <label for="itens-cadastrados">Materiais/Serviços Cadastrados</label>
+                <select id="itens-cadastrados">
+                    <option value="">Selecione um item...</option>
+                    </select>
+                <button id="adicionar-item-cadastrado" class="btn-success">
+                     <i class="fas fa-plus-circle"></i> Adicionar Selecionado
+                </button>
+            </div>
+            <div>
+                <button id="adicionar-item-nao-cadastrado" class="btn-info">
+                     <i class="fas fa-pencil-alt"></i> Adicionar Item Manual
+                </button>
+            </div>
         </div>
 
-        <!-- Tabela de Serviços/Materiais -->
+
         <h2>Itens do Orçamento</h2>
-        <table id="tabela-orcamento">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Descrição</th>
-                    <th>Quantidade</th>
-                    <th>Preço Unitário</th>
-                    <th>Subtotal</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Itens serão preenchidos dinamicamente -->
-            </tbody>
-        </table>
-        <p><strong>Total Geral: R$ <span id="total-geral">0.00</span></strong></p>
-
-        <!-- Prazo -->
-        <div>
-            <label for="prazo-entrega">Prazo de Entrega</label>
-            <input type="date" id="prazo-entrega">
+        <div style="overflow-x: auto;">
+            <table id="tabela-orcamento">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Descrição</th>
+                        <th>Quantidade</th>
+                        <th>Preço Unitário</th>
+                        <th>Subtotal</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
         </div>
-        <div>
-            <label for="prazo-pagamento">Prazo de Pagamento</label>
-            <input type="date" id="prazo-pagamento">
+        <p class="total-row"><strong>Total Geral: R$ <span id="total-geral">0.00</span></strong></p>
+
+
+        <div class="prazo-section">
+             <h2>Prazos</h2>
+            <div>
+                <label for="prazo-entrega-text">Prazo de Entrega:</label>
+                <input type="text" id="prazo-entrega-text" placeholder="Ex: 30 dias após aceite">
+            </div>
+            <div>
+                <label for="prazo-pagamento-text">Prazo de Pagamento:</label>
+                <input type="text" id="prazo-pagamento-text" placeholder="Ex: ENTRADA+48 DIA ou 28/56/84">
+            </div>
         </div>
 
-        <!-- Botões -->
+
         <div class="actions">
-            <button id="salvar-orcamento">Salvar Orçamento</button>
-            <button id="gerar-pdf">Gerar PDF</button>
-            <button id="enviar-whatsapp">Enviar por WhatsApp</button>
+            <button id="salvar-orcamento" class="btn-primary">
+                 <i class="fas fa-save"></i> Salvar Orçamento
+            </button>
+             <button id="btn-aprovar-orcamento" class="btn-warning" style="display: none;">
+                 <i class="fas fa-check-circle"></i> Aprovar Orçamento
+             </button>
+            <button id="gerar-pdf" class="btn-danger">
+                 <i class="fas fa-file-pdf"></i> Gerar PDF
+            </button>
+            <button id="enviar-whatsapp" class="btn-whatsapp">
+                 <i class="fab fa-whatsapp"></i> Enviar WhatsApp
+            </button>
         </div>
     </div>
 
-    <!-- Incluindo jsPDF para geração de PDFs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, query, orderBy, limit, deleteDoc, runTransaction, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-        // Configuração do Firebase (substitua por suas variáveis de ambiente em produção)
+
         const firebaseConfig = {
             apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
             authDomain: "novojsfer.firebaseapp.com",
@@ -162,16 +494,42 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Carrega clientes do Firebase
+        let orcamentoId = null;
+        let modoEdicao = false;
+        let orcamentoAprovado = false; // Novo estado para orçamento aprovado
+
+        const mainTitleElement = document.querySelector('h1');
+        const numeroOrcamentoExibicao = document.getElementById('numero-orcamento-exibicao');
+
+        const numeroOrcamentoBuscaInput = document.getElementById('numero-orcamento-busca');
+        const btnBuscarOrcamento = document.getElementById('btn-buscar-orcamento');
+
+        const clienteSelect = document.getElementById("cliente");
+        const itensCadastradosSelect = document.getElementById("itens-cadastrados");
+        const adicionarItemCadastradoBtn = document.getElementById("adicionar-item-cadastrado");
+        const adicionarItemNaoCadastradoBtn = document.getElementById("adicionar-item-nao-cadastrado");
+        const tabelaOrcamentoBody = document.querySelector("#tabela-orcamento tbody");
+        const totalGeralElement = document.getElementById("total-geral");
+        const prazoEntregaInput = document.getElementById("prazo-entrega-text");
+        const prazoPagamentoInput = document.getElementById("prazo-pagamento-text");
+        const salvarOrcamentoBtn = document.getElementById("salvar-orcamento");
+        const gerarPdfBtn = document.getElementById("gerar-pdf");
+        const enviarWhatsappBtn = document.getElementById("enviar-whatsapp");
+        const btnAprovarOrcamento = document.getElementById('btn-aprovar-orcamento'); // Novo botão Aprovar
+
+
         async function carregarClientes() {
-            const clienteSelect = document.getElementById("cliente");
+            clienteSelect.innerHTML = '<option value="">Selecione um cliente...</option>';
             try {
-                const querySnapshot = await getDocs(collection(db, "clientes"));
+                const q = query(collection(db, "clientes"), orderBy("empresa"));
+                const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
                     const cliente = doc.data();
                     const option = document.createElement("option");
-                    option.value = JSON.stringify({ id: doc.id, nome: cliente.empresa });
-                    option.textContent = `${cliente.empresa} - ${cliente.comprador}`;
+                    // Salva o ID e o nome/empresa do cliente no value (como JSON string)
+                    option.value = JSON.stringify({ id: doc.id, nome: cliente.empresa || cliente.nome });
+                    // Exibe empresa e comprador, se existir
+                    option.textContent = `${cliente.empresa || cliente.nome || 'Cliente sem nome'} ${cliente.comprador ? ' - ' + cliente.comprador : ''}`;
                     clienteSelect.appendChild(option);
                 });
             } catch (error) {
@@ -180,21 +538,23 @@
             }
         }
 
-        // Carrega itens cadastrados do Firebase
         async function carregarItensCadastrados() {
-            const itensSelect = document.getElementById("itens-cadastrados");
+             itensCadastradosSelect.innerHTML = '<option value="">Selecione um item...</option>';
             try {
-                const querySnapshot = await getDocs(collection(db, "materiais"));
+                const q = query(collection(db, "materiais"), orderBy("nome"));
+                const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
                     const item = doc.data();
                     const option = document.createElement("option");
-                    option.value = JSON.stringify({ 
-                        nome: item.nome, 
-                        preco: item.preco,
+                    option.value = JSON.stringify({
+                        nome: item.nome,
+                        // Garante que preco é um número
+                        preco: parseFloat(item.preco) || 0,
                         descricao: item.descricao || ""
                     });
-                    option.textContent = `${item.nome} - R$ ${item.preco.toFixed(2)}`;
-                    itensSelect.appendChild(option);
+                    // Formata o preço para exibição
+                    option.textContent = `${item.nome} - R$ ${(parseFloat(item.preco) || 0).toFixed(2)}`;
+                    itensCadastradosSelect.appendChild(option);
                 });
             } catch (error) {
                 console.error("Erro ao carregar itens cadastrados:", error);
@@ -202,277 +562,790 @@
             }
         }
 
-        // Adiciona item cadastrado à tabela
-        document.getElementById("adicionar-item-cadastrado").addEventListener("click", () => {
-            const itensSelect = document.getElementById("itens-cadastrados");
-            const itemSelecionado = itensSelect.value;
-            if (!itemSelecionado) return alert("Selecione um item!");
-            
-            const { nome, preco, descricao } = JSON.parse(itemSelecionado);
-            adicionarLinhaTabela(nome, descricao, 1, preco);
+        adicionarItemCadastradoBtn.addEventListener("click", () => {
+            const itensSelectValue = itensCadastradosSelect.value;
+            if (!itensSelectValue) {
+                alert("Selecione um item!");
+                return;
+            }
+            const itemSelecionado = JSON.parse(itensSelectValue);
+            adicionarLinhaTabela(itemSelecionado.nome, itemSelecionado.descricao, 1, itemSelecionado.preco);
         });
 
-        // Adiciona item não cadastrado à tabela
-        document.getElementById("adicionar-item-nao-cadastrado").addEventListener("click", () => {
+        adicionarItemNaoCadastradoBtn.addEventListener("click", () => {
             const nomeItem = prompt("Digite o nome do item:");
+            const descricaoItem = prompt("Digite a descrição do item (opcional):") || "";
             if (nomeItem) {
-                adicionarLinhaTabela(nomeItem, "", 1, 0.00);
+                adicionarLinhaTabela(nomeItem.trim(), descricaoItem.trim(), 1, 0.00);
             }
         });
-        import { doc, getDoc, updateDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-let orcamentoId = null;
-let modoEdicao = false;
 
-// Verifica se estamos editando um orçamento
-window.addEventListener("load", async () => {
-    carregarClientes();
-    carregarItensCadastrados();
+        function adicionarLinhaTabela(item, descricao, quantidade, precoUnitario) {
+            if (!tabelaOrcamentoBody) {
+                console.error("Erro: tbody da tabela de orçamento não encontrado!");
+                alert("Erro ao adicionar item. O corpo da tabela não foi encontrado.");
+                return;
+            }
+            const novaLinha = document.createElement("tr");
+            quantidade = parseFloat(quantidade) || 0;
+            precoUnitario = parseFloat(precoUnitario) || 0;
 
-    const params = new URLSearchParams(window.location.search);
-    orcamentoId = params.get("orcamentoId");
+            novaLinha.innerHTML = `
+                <td>${item}</td>
+                <td><input type="text" value="${descricao.replace(/"/g, '&quot;')}" class="table-item-input"></td>
+                <td><input type="number" value="${quantidade}" min="1" class="quantidade table-item-input"></td>
+                <td><input type="number" value="${precoUnitario.toFixed(2)}" step="0.01" min="0" class="preco-unitario table-item-input"></td>
+                <td class="subtotal">R$ ${(quantidade * precoUnitario).toFixed(2)}</td>
+                <td><button class="remover-item btn-danger btn-sm">
+                    <i class="fas fa-trash-alt"></i> Remover
+                </button></td>
+            `;
 
-    if (orcamentoId) {
-        modoEdicao = true;
-        const docRef = doc(db, "orcamentos", orcamentoId);
-        const docSnap = await getDoc(docRef);
+            tabelaOrcamentoBody.appendChild(novaLinha);
 
-        if (docSnap.exists()) {
-            const dados = docSnap.data();
-            document.getElementById("prazo-entrega").value = dados.prazoEntrega || "";
-            document.getElementById("prazo-pagamento").value = dados.prazoPagamento || "";
-            document.getElementById("total-geral").textContent = dados.totalGeral.toFixed(2);
+            const quantidadeInput = novaLinha.querySelector(".quantidade");
+            const precoUnitarioInput = novaLinha.querySelector(".preco-unitario");
+            const removerButton = novaLinha.querySelector(".remover-item");
 
-            // Seleciona cliente correto
+            if(quantidadeInput) quantidadeInput.addEventListener("input", actualizarTotalGeral);
+            if(precoUnitarioInput) precoUnitarioInput.addEventListener("input", actualizarTotalGeral);
+
+            if(removerButton) {
+                removerButton.addEventListener("click", () => {
+                    novaLinha.remove();
+                    actualizarTotalGeral();
+                });
+            }
+            actualizarTotalGeral();
+        }
+
+        function actualizarTotalGeral() {
+            console.log("Atualizando Total Geral...");
+            let totalGeral = 0;
+            const linhas = tabelaOrcamentoBody.querySelectorAll("tr");
+            console.log("Número de linhas na tabela:", linhas.length);
+
+            linhas.forEach((linha, index) => {
+                console.log(`Processando linha ${index}:`, linha);
+                const quantidade = parseFloat(linha.querySelector(".quantidade")?.value) || 0;
+                const precoUnitario = parseFloat(linha.querySelector(".preco-unitario")?.value) || 0;
+                const subtotal = quantidade * precoUnitario;
+
+                console.log(`  Quantidade: ${quantidade}, Preço Unitário: ${precoUnitario}, Subtotal calculado: ${subtotal}`);
+
+                const subtotalCell = linha.querySelector(".subtotal");
+                if(subtotalCell) {
+                    subtotalCell.textContent = `R$ ${subtotal.toFixed(2)}`;
+                } else {
+                    console.warn("Célula de subtotal não encontrada na linha:", linha);
+                }
+                totalGeral += subtotal;
+                 console.log("  Total Geral acumulado até agora:", totalGeral);
+            });
+
+            totalGeralElement.textContent = totalGeral.toFixed(2);
+            console.log("Total Geral final exibido:", totalGeral.toFixed(2));
+        }
+
+
+        async function buscarOrcamentoPorNumero(numero) {
+            console.log("Iniciando busca por orçamento...");
+            if (!numero || numero.trim() === "") {
+                alert("Por favor, digite o número do orçamento para buscar.");
+                console.warn("Número de busca vazio.");
+                return;
+            }
+
+            const numeroFormatado = !isNaN(parseFloat(numero)) ? String(parseFloat(numero)).padStart(2, '0') : numero.trim();
+            console.log("Buscando orçamento número (formatado):", numeroFormatado);
+
+            try {
+                const q = query(
+                    collection(db, "orcamentos"),
+                    where("numeroOrcamento", "==", numeroFormatado)
+                );
+                console.log("Query Firebase criada:", q);
+                const querySnapshot = await getDocs(q);
+                console.log("Query executada. Snapshot vazio:", querySnapshot.empty);
+
+                if (querySnapshot.empty) {
+                    alert(`Orçamento número ${numeroFormatado} não encontrado.`);
+                    console.log("Orçamento não encontrado no banco.");
+                    limparFormulario();
+                } else {
+                    const docSnap = querySnapshot.docs[0];
+                    const dados = docSnap.data();
+                    const idEncontrado = docSnap.id;
+                    console.log("Orçamento encontrado! ID:", idEncontrado, "Dados:", dados);
+                    preencherFormularioComDados(idEncontrado, dados);
+                    console.log("Formulário preenchido com dados do orçamento encontrado.");
+
+                }
+            } catch (error) {
+                console.error("Erro na função buscarOrcamentoPorNumero:", error);
+                alert("Erro ao buscar orçamento. Verifique o console.");
+            }
+        }
+
+
+        function preencherFormularioComDados(id, dados) {
+            console.log("Iniciando preenchimento do formulário com dados:", id, dados);
+            limparFormulario(); // Limpa o formulário antes de preencher
+
+            orcamentoId = id;
+            modoEdicao = true;
+            // Verifica se o orçamento já foi aprovado para controlar a visibilidade do botão Aprovar
+            orcamentoAprovado = dados.aprovado || false;
+
+            mainTitleElement.textContent = `Editar Orçamento `;
+             numeroOrcamentoExibicao.textContent = `#${dados.numeroOrcamento || id.substring(0, 8).toUpperCase()}`;
+            console.log("Modo edição ativado. orcamentoId:", orcamentoId, "Aprovado:", orcamentoAprovado);
+
+            prazoEntregaInput.value = dados.prazoEntrega || "";
+            prazoPagamentoInput.value = dados.prazoPagamento || "";
+            console.log("Campos de prazo preenchidos.");
+
+            // Controla a visibilidade e estado do botão Aprovar
+            if (modoEdicao && !orcamentoAprovado) {
+                btnAprovarOrcamento.style.display = 'inline-block'; // Mostra o botão se estiver em edição e não aprovado
+                btnAprovarOrcamento.disabled = false;
+            } else {
+                btnAprovarOrcamento.style.display = 'none'; // Esconde o botão
+            }
+             // Opcional: Desabilitar campos de edição se já aprovado?
+             // if (orcamentoAprovado) { /* desabilitar inputs e selects */ }
+
+
+            const selecionarCliente = () => {
+                 console.log("Tentando selecionar cliente...");
+                 let clienteEncontrado = false;
+                 [...clienteSelect.options].forEach(opt => {
+                    // Verifica se o valor não é vazio antes de parsear
+                    if (opt.value) {
+                        try {
+                            const clienteValue = JSON.parse(opt.value);
+                            if (clienteValue.id === dados.clienteId) {
+                                opt.selected = true;
+                                clienteEncontrado = true;
+                                console.log("Cliente selecionado:", clienteValue.nome);
+                            }
+                        } catch (e) {
+                            console.error("Erro ao parsear valor do cliente ao preencher formulário:", opt.value, e);
+                        }
+                    }
+                 });
+                 if (!clienteEncontrado && dados.clienteId) { // Avisa se o cliente salvo não foi encontrado no dropdown (mas só se um clienteId existia nos dados)
+                     console.warn("Cliente com ID", dados.clienteId, "salvo no orçamento não encontrado no dropdown de clientes carregados.");
+                 }
+             };
+
+             if (clienteSelect.options.length > 1) {
+                selecionarCliente();
+             } else {
+                console.log("Dropdown de clientes não carregado, esperando para selecionar...");
+                setTimeout(selecionarCliente, 500);
+             }
+
+            tabelaOrcamentoBody.innerHTML = "";
+            console.log("Tabela de itens limpa.");
+
+            if (dados.itens && dados.itens.length > 0) {
+                console.log("Adicionando", dados.itens.length, "itens à tabela...");
+                dados.itens.forEach(item => {
+                    adicionarLinhaTabela(item.item, item.descricao, item.quantidade, item.precoUnitario);
+                });
+                 console.log("Itens da tabela adicionados. actualizarTotalGeral chamado por adicionarLinhaTabela para cada item.");
+            } else {
+                 console.log("Nenhum item nos dados do orçamento, garantindo total geral é 0.");
+                 actualizarTotalGeral();
+            }
+         }
+
+
+        gerarPdfBtn.addEventListener("click", () => {
+            console.log("Gerando PDF...");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const companyName = "JS FER FERRAMENTARIA";
+            const companyAddress1 = "Rua Argentina, 1300 galpão 3";
+            const companyAddress2 = "Bairro Guarau - Salto - SP CEP: 13324-200";
+            const companyCNPJ = "CNPJ: 31.886.382/0001-26";
+            const companyIE = "I.E. 600.248.772.115";
+            const companyPhone = "Fone: (11) 97501-8042";
+
             const clienteSelect = document.getElementById("cliente");
-            [...clienteSelect.options].forEach(opt => {
-                if (opt.value.includes(dados.clienteId)) {
-                    opt.selected = true;
+            const clienteData = clienteSelect.value ? JSON.parse(clienteSelect.value) : { id: "", nome: "Cliente não selecionado" };
+            const clienteNomeExibicao = clienteData.nome || clienteData.empresa || "Cliente não selecionado";
+
+            doc.setFontSize(10);
+            doc.text(companyName, 14, 15);
+            doc.setFontSize(8);
+            doc.text(companyAddress1, 14, 19);
+            doc.text(companyAddress2, 14, 23);
+            doc.text(companyPhone, 14, 27);
+
+            doc.text(companyCNPJ, 14, 31);
+            doc.text(companyIE, 14, 35);
+
+            doc.setFontSize(18);
+            const center = doc.internal.pageSize.getWidth() / 2;
+            doc.text("ORÇAMENTO", center, 20, { align: 'center' });
+
+            doc.setFontSize(10);
+            const now = new Date();
+            const dateString = `DATA: ${now.toLocaleDateString('pt-BR')}`;
+            const timeString = `HORA: ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+            const rightMargin = doc.internal.pageSize.getWidth() - 14;
+            doc.text(dateString, rightMargin, 25, { align: 'right' });
+            doc.text(timeString, rightMargin, 30, { align: 'right' });
+
+            const numeroOrcamentoPDF = numeroOrcamentoExibicao.textContent || (modoEdicao && orcamentoId ? `ID: ${orcamentoId.substring(0, 8).toUpperCase()}` : 'NOVO');
+
+            doc.text(`NR. DO ORÇAMENTO: ${numeroOrcamentoPDF}`, rightMargin, 35, { align: 'right' });
+
+            doc.setFontSize(10);
+            let yCliente = 45;
+            const xCliente = 14;
+            doc.text(`CLIENTE: ${clienteNomeExibicao}`, xCliente, yCliente); yCliente += 5;
+
+            doc.setFontSize(10);
+            let yTable = 65;
+            const headers = ["CÓDIGO/ITEM", "DESCRIÇÃO", "QTDE", "V. UNIT.", "SUBTOTAL"];
+            const colWidths = [30, 80, 20, 30, 30];
+            const xPositions = [14, 44, 124, 144, 174];
+
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            headers.forEach((header, index) => {
+                doc.text(header, xPositions[index], yTable);
+            });
+            doc.setFont(undefined, 'normal');
+
+            yTable += 7;
+
+            const linhas = tabelaOrcamentoBody.querySelectorAll("tr");
+            linhas.forEach((linha) => {
+                const item = linha.querySelector("td:first-child").textContent.trim();
+                const descricao = linha.querySelector("td:nth-child(2) input").value.trim();
+                const quantidade = linha.querySelector(".quantidade").value;
+                const precoUnitario = linha.querySelector(".preco-unitario").value;
+                const subtotal = linha.querySelector(".subtotal").textContent.replace("R$", "").trim();
+
+                const descricaoLines = doc.splitTextToSize(descricao, colWidths[1]);
+
+                doc.text(item, xPositions[0], yTable);
+                doc.text(descricaoLines, xPositions[1], yTable);
+                doc.text(quantidade, xPositions[2], yTable, { align: 'right' });
+                doc.text(`R$ ${parseFloat(precoUnitario).toFixed(2)}`, xPositions[3], yTable, { align: 'right' });
+                doc.text(`R$ ${parseFloat(subtotal).toFixed(2)}`, xPositions[4], yTable, { align: 'right' });
+
+                yTable += (descricaoLines.length * doc.internal.getLineHeight() / doc.internal.scaleFactor) + 2;
+
+                if (yTable > doc.internal.pageSize.getHeight() - 40) {
+                    doc.addPage();
+                    yTable = 20;
+                    doc.setFontSize(9);
+                    doc.setFont(undefined, 'bold');
+                    headers.forEach((header, index) => {
+                        doc.text(header, xPositions[index], yTable);
+                    });
+                    doc.setFont(undefined, 'normal');
+                    yTable += 7;
                 }
             });
 
-            dados.itens.forEach(item => {
-                adicionarLinhaTabela(item.item, item.descricao, item.quantidade, item.precoUnitario);
-            });
-        }
-    }
-});
+            doc.setFontSize(11);
+            let yFooter = yTable + 10;
+
+            const totalGeral = totalGeralElement.textContent;
+            doc.setFont(undefined, 'bold');
+            doc.text(`TOTAL GERAL: ${totalGeral}`, rightMargin, yFooter, { align: 'right' });
+            doc.setFont(undefined, 'normal');
+
+            const prazoEntrega = prazoEntregaInput.value.trim();
+            const prazoPagamento = prazoPagamentoInput.value.trim();
+
+            if (prazoEntrega) {
+                yFooter += 10;
+                doc.text(`Prazo de Entrega: ${prazoEntrega}`, 14, yFooter);
+            }
+            if (prazoPagamento) {
+                yFooter += (prazoEntrega ? 5 : 10);
+                doc.text(`Prazo de Pagamento: ${prazoPagamento}`, 14, yFooter);
+            }
+
+            let yRodape = doc.internal.pageSize.getHeight() - 30;
+            doc.setFontSize(8);
+            doc.text("Não é válido como nota fiscal", 14, yRodape);
+
+            yRodape += 15;
+            doc.text("_________________________", 14, yRodape);
+            doc.text("Vendedor", 14, yRodape + 4);
+
+            doc.text("_________________________", rightMargin - 50, yRodape, { align: 'center'});
+            doc.text("Assinatura do Cliente", rightMargin - 50, yRodape + 4, { align: 'center'});
+
+            const pageCount = doc.internal.getNumberOfPages();
+            for(let i = 1; i <= pageCount; i++) {
+                 doc.setPage(i);
+                 doc.setFontSize(8);
+                 doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.getWidth() - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+            }
+
+            const safeClienteNome = clienteNomeExibicao.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+            const filename = `Orçamento_${numeroOrcamentoPDF.replace(/[^a-zA-Z0-9]/g, '')}_${safeClienteNome}_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(filename);
+             console.log("PDF gerado.");
+        });
 
 
-        // Adiciona nova linha à tabela de orçamento
-        function adicionarLinhaTabela(item, descricao, quantidade, precoUnitario) {
-            const tabelaBody = document.querySelector("#tabela-orcamento tbody");
-            const novaLinha = document.createElement("tr");
-            
-            novaLinha.innerHTML = `
-                <td>${item}</td>
-                <td><input type="text" value="${descricao}"></td>
-                <td><input type="number" value="${quantidade}" min="1" class="quantidade"></td>
-                <td><input type="number" value="${precoUnitario.toFixed(2)}" step="0.01" min="0" class="preco-unitario"></td>
-                <td class="subtotal">R$ ${(quantidade * precoUnitario).toFixed(2)}</td>
-                <td><button class="remover-item">Remover</button></td>
-            `;
-            
-            tabelaBody.appendChild(novaLinha);
-            
-            // Adiciona eventos para atualizar automaticamente
-            novaLinha.querySelector(".quantidade").addEventListener("change", atualizarTotalGeral);
-            novaLinha.querySelector(".preco-unitario").addEventListener("change", atualizarTotalGeral);
-            novaLinha.querySelector(".remover-item").addEventListener("click", () => {
-                novaLinha.remove();
-                atualizarTotalGeral();
-            });
-            
-            atualizarTotalGeral();
-        }
-
-        // Atualiza o total geral do orçamento
-        function atualizarTotalGeral() {
-            let totalGeral = 0;
-            const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
-            
-            linhas.forEach((linha) => {
-                const quantidade = parseFloat(linha.querySelector(".quantidade").value) || 0;
-                const precoUnitario = parseFloat(linha.querySelector(".preco-unitario").value) || 0;
-                const subtotal = quantidade * precoUnitario;
-                
-                linha.querySelector(".subtotal").textContent = `R$ ${subtotal.toFixed(2)}`;
-                totalGeral += subtotal;
-            });
-            
-            document.getElementById("total-geral").textContent = totalGeral.toFixed(2);
-        }
-
-        // Gera PDF do orçamento
-        document.getElementById("gerar-pdf").addEventListener("click", () => {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
+        enviarWhatsappBtn.addEventListener("click", () => {
+            console.log("Iniciando envio WhatsApp...");
             const clienteSelect = document.getElementById("cliente");
-            const cliente = clienteSelect.value ? JSON.parse(clienteSelect.value) : { nome: "Cliente não selecionado" };
-            
-            // Cabeçalho
-            doc.setFontSize(18);
-            doc.text("ORÇAMENTO", 105, 15, { align: 'center' });
-            
-            // Informações do cliente
-            doc.setFontSize(12);
-            doc.text(`Cliente: ${cliente.nome}`, 14, 25);
-            doc.text(`Data: ${new Date().toLocaleDateString()}`, 14, 35);
-            
-            // Itens do orçamento
-            doc.text("Itens do Orçamento:", 14, 45);
-            
-            // Cabeçalho da tabela
-            doc.text("Item", 14, 55);
-            doc.text("Descrição", 50, 55);
-            doc.text("Qtd.", 120, 55);
-            doc.text("Preço Unit.", 140, 55);
-            doc.text("Subtotal", 170, 55);
-            
-            // Linhas dos itens
-            let y = 65;
-            const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
+            const clienteData = clienteSelect.value ? JSON.parse(clienteSelect.value) : { id: "", nome: "Cliente não selecionado", telefone: "" };
+            const clienteNomeMensagem = clienteData.nome || clienteData.empresa || "Cliente";
+            const numeroOrcamentoMensagem = numeroOrcamentoExibicao.textContent || (modoEdicao && orcamentoId ? `ID: ${orcamentoId.substring(0, 8).toUpperCase()}` : 'NOVO');
+
+            let mensagem = `*ORÇAMENTO #${numeroOrcamentoMensagem} PARA ${clienteNomeMensagem.toUpperCase()}*\n\n`;
+            mensagem += `*Data:* ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+
+            mensagem += "*ITENS:*\n";
+            const linhas = tabelaOrcamentoBody.querySelectorAll("tr");
             linhas.forEach((linha) => {
                 const item = linha.querySelector("td:first-child").textContent.trim();
                 const descricao = linha.querySelector("td:nth-child(2) input").value.trim();
                 const quantidade = linha.querySelector(".quantidade").value;
                 const precoUnitario = linha.querySelector(".preco-unitario").value;
                 const subtotal = linha.querySelector(".subtotal").textContent;
-                
-                doc.text(item, 14, y);
-                doc.text(descricao.substring(0, 30), 50, y); // Limita a descrição
-                doc.text(quantidade, 120, y);
-                doc.text(`R$ ${parseFloat(precoUnitario).toFixed(2)}`, 140, y);
-                doc.text(subtotal, 170, y);
-                
-                y += 10;
-                if (y > 280) { // Quebra de página se necessário
-                    doc.addPage();
-                    y = 20;
-                }
-            });
-            
-            // Total
-            doc.setFontSize(14);
-            doc.text(`Total Geral: R$ ${document.getElementById("total-geral").textContent}`, 14, y + 10);
-            
-            // Prazo
-            const prazoEntrega = document.getElementById("prazo-entrega").value;
-            if (prazoEntrega) {
-                doc.text(`Prazo de Entrega: ${new Date(prazoEntrega).toLocaleDateString()}`, 14, y + 20);
-            }
-            
-            // Salva o PDF
-            doc.save(`Orçamento_${cliente.nome.replace(/ /g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-        });
 
-        // Envia orçamento por WhatsApp
-        document.getElementById("enviar-whatsapp").addEventListener("click", () => {
-            const clienteSelect = document.getElementById("cliente");
-            const cliente = clienteSelect.value ? JSON.parse(clienteSelect.value) : { nome: "Cliente não selecionado" };
-            
-            let mensagem = `*ORÇAMENTO PARA ${cliente.nome.toUpperCase()}*\n\n`;
-            mensagem += `*Data:* ${new Date().toLocaleDateString()}\n\n`;
-            mensagem += "*ITENS:*\n";
-            
-            const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
-            linhas.forEach((linha) => {
-                const item = linha.querySelector("td:first-child").textContent.trim();
-                const quantidade = linha.querySelector(".quantidade").value;
-                const precoUnitario = linha.querySelector(".preco-unitario").value;
-                const subtotal = linha.querySelector(".subtotal").textContent;
-                
-                mensagem += `- ${item} (${quantidade} x R$ ${parseFloat(precoUnitario).toFixed(2)}) = ${subtotal}\n`;
+                mensagem += `- ${item}`;
+                if (descricao) mensagem += ` - ${descricao}`;
+                mensagem += ` (${quantidade} x R$ ${parseFloat(precoUnitario).toFixed(2)}) = ${subtotal}\n`;
             });
-            
-            mensagem += `\n*TOTAL GERAL: R$ ${document.getElementById("total-geral").textContent}*\n`;
-            
-            const prazoEntrega = document.getElementById("prazo-entrega").value;
+
+            mensagem += `\n*TOTAL GERAL: ${totalGeralElement.textContent}*\n`;
+
+            const prazoEntrega = prazoEntregaInput.value.trim();
+            const prazoPagamento = prazoPagamentoInput.value.trim();
+
             if (prazoEntrega) {
-                mensagem += `*Prazo de Entrega:* ${new Date(prazoEntrega).toLocaleDateString()}\n`;
+                mensagem += `*Prazo de Entrega:* ${prazoEntrega}\n`;
             }
-            
-            const prazoPagamento = document.getElementById("prazo-pagamento").value;
             if (prazoPagamento) {
-                mensagem += `*Prazo de Pagamento:* ${new Date(prazoPagamento).toLocaleDateString()}\n`;
+                mensagem += `*Prazo de Pagamento:* ${prazoPagamento}\n`;
             }
-            
+
             mensagem += "\nAgradecemos pela preferência!";
-            
             const encodedMessage = encodeURIComponent(mensagem);
             window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+             console.log("Link WhatsApp aberto.");
         });
 
-        // Limpa o formulário após salvar
+
         function limparFormulario() {
-            document.getElementById("cliente").value = "";
-            document.querySelector("#tabela-orcamento tbody").innerHTML = "";
-            document.getElementById("total-geral").textContent = "0.00";
-            document.getElementById("prazo-entrega").value = "";
-            document.getElementById("prazo-pagamento").value = "";
+            console.log("Limpando formulário...");
+            clienteSelect.value = "";
+            tabelaOrcamentoBody.innerHTML = "";
+            totalGeralElement.textContent = "0.00";
+            prazoEntregaInput.value = "";
+            prazoPagamentoInput.value = "";
+            orcamentoId = null;
+            modoEdicao = false;
+            orcamentoAprovado = false; // Reseta o estado de aprovado
+            mainTitleElement.textContent = "Orçamento";
+             if(numeroOrcamentoExibicao) numeroOrcamentoExibicao.textContent = "";
+             numeroOrcamentoBuscaInput.value = "";
+             // Esconde o botão Aprovar ao limpar o formulário
+             btnAprovarOrcamento.style.display = 'none';
+             btnAprovarOrcamento.disabled = false; // Garante que não fica desabilitado para o próximo load/busca
+             console.log("Formulário limpo.");
         }
-        // Salvar orçamento no Firebase
-document.getElementById("salvar-orcamento").addEventListener("click", async () => {
-    const clienteSelect = document.getElementById("cliente");
-    const prazoEntrega = document.getElementById("prazo-entrega").value;
-    const prazoPagamento = document.getElementById("prazo-pagamento").value;
-    const totalGeral = parseFloat(document.getElementById("total-geral").textContent);
-    
-    if (!clienteSelect.value) {
-        return alert("Selecione um cliente antes de salvar!");
-    }
-    
-    const cliente = JSON.parse(clienteSelect.value);
-    
-    // Coletar itens da tabela
-    const itens = [];
-    const linhas = document.querySelectorAll("#tabela-orcamento tbody tr");
-    linhas.forEach((linha) => {
-        itens.push({
-            item: linha.querySelector("td:first-child").textContent.trim(),
-            descricao: linha.querySelector("td:nth-child(2) input").value.trim(),
-            quantidade: parseFloat(linha.querySelector(".quantidade").value),
-            precoUnitario: parseFloat(linha.querySelector(".preco-unitario").value)
-        });
-    });
-    
-    if (itens.length === 0) {
-        return alert("Adicione pelo menos um item ao orçamento!");
-    }
-    
-    try {
-        const dadosOrcamento = {
-            clienteId: cliente.id,
-            clienteNome: cliente.nome,
-            itens,
-            totalGeral,
-            prazoEntrega,
-            prazoPagamento,
-            dataCriacao: new Date().toISOString()
-        };
-        
-        if (modoEdicao && orcamentoId) {
-            // Atualiza orçamento existente
-            await updateDoc(doc(db, "orcamentos", orcamentoId), dadosOrcamento);
-            alert("Orçamento atualizado com sucesso!");
-        } else {
-            // Cria novo orçamento
-            await addDoc(collection(db, "orcamentos"), dadosOrcamento);
-            alert("Orçamento salvo com sucesso!");
-            limparFormulario();
-        }
-    } catch (error) {
-        console.error("Erro ao salvar orçamento:", error);
-        alert("Erro ao salvar orçamento. Verifique o console.");
-    }
-});
 
-        // Carrega dados ao iniciar
-        window.addEventListener("load", () => {
+
+       
+        salvarOrcamentoBtn.addEventListener("click", async () => {
+            console.log("Botão Salvar clicado.");
+            const clienteSelectValue = clienteSelect.value;
+
+            if (!clienteSelectValue) {
+                alert("Selecione um cliente antes de salvar!");
+                console.warn("Cliente não selecionado ao tentar salvar.");
+                return;
+            }
+            const cliente = JSON.parse(clienteSelectValue);
+
+            const itens = [];
+            const linhas = tabelaOrcamentoBody.querySelectorAll("tr");
+            if (linhas.length === 0) {
+                alert("Adicione pelo menos um item ao orçamento!");
+                console.warn("Nenhum item na tabela ao tentar salvar.");
+                return;
+            }
+
+            linhas.forEach((linha) => {
+                const quantidade = parseFloat(linha.querySelector(".quantidade")?.value) || 0;
+                const precoUnitario = parseFloat(linha.querySelector(".preco-unitario")?.value) || 0;
+
+                itens.push({
+                    item: linha.querySelector("td:first-child").textContent.trim(),
+                    descricao: linha.querySelector("td:nth-child(2) input").value.trim(),
+                    quantidade: quantidade,
+                    precoUnitario: precoUnitario
+                });
+            });
+
+            const totalGeral = parseFloat(totalGeralElement.textContent) || 0;
+            const prazoEntrega = prazoEntregaInput.value.trim();
+            const prazoPagamento = prazoPagamentoInput.value.trim();
+
+
+            try {
+                if (modoEdicao && orcamentoId) {
+                    console.log("Modo edição: Atualizando orçamento ID:", orcamentoId);
+                    const orcamentoRef = doc(db, "orcamentos", orcamentoId);
+                    const updateData = {
+                         clienteId: cliente.id,
+                         clienteNome: cliente.nome,
+                         itens: itens,
+                         totalGeral: totalGeral,
+                         prazoEntrega: prazoEntrega,
+                         prazoPagamento: prazoPagamento,
+                         dataAtualizacao: new Date().toISOString()
+                         // Não altera o estado 'aprovado', 'numeroPedido', 'pedidoId' aqui
+                    };
+                    await updateDoc(orcamentoRef, updateData);
+                    alert("Orçamento atualizado com sucesso!");
+                } else {
+                    console.log("Modo novo orçamento: Criando novo com número sequencial.");
+                    const dadosOrcamentoBase = {
+                        clienteId: cliente.id,
+                        clienteNome: cliente.nome,
+                        itens: itens,
+                        totalGeral: totalGeral,
+                        prazoEntrega: prazoEntrega,
+                        prazoPagamento: prazoPagamento,
+                        dataCriacao: new Date().toISOString(),
+                        aprovado: false, // Novo orçamento começa como não aprovado
+                        numeroPedido: null, // Sem número de pedido inicialmente
+                        pedidoId: null // Sem ID de pedido inicialmente
+                    };
+
+                    const newOrcamentoNumber = await runTransaction(db, async (transaction) => {
+                        console.log("Iniciando transação para obter número do orçamento.");
+                        const counterRef = doc(db, "metadata", "orcamentoCounter");
+                        const counterSnap = await transaction.get(counterRef);
+
+                        let currentNumber = 0;
+                        if (counterSnap.exists()) {
+                            currentNumber = counterSnap.data().lastOrcamentoNumber || 0;
+                        }
+                        const nextNumber = currentNumber + 1;
+                        transaction.set(counterRef, { lastOrcamentoNumber: nextNumber });
+                        console.log("Contador de orçamento atualizado para:", nextNumber);
+
+                        const novoOrcamentoRef = doc(collection(db, "orcamentos"));
+                        transaction.set(novoOrcamentoRef, {
+                            ...dadosOrcamentoBase,
+                            numeroOrcamento: String(nextNumber).padStart(2, '0'),
+                        });
+                        console.log("Novo documento de orçamento criado na transação com ID:", novoOrcamentoRef.id, "Número:", String(nextNumber).padStart(2, '0'));
+                        return nextNumber;
+                    });
+
+                    const formattedOrcamentoNumber = String(newOrcamentoNumber).padStart(2, '0');
+                    alert(`Orçamento salvo com sucesso! Número: ${formattedOrcamentoNumber}`);
+
+                    if(numeroOrcamentoExibicao) numeroOrcamentoExibicao.textContent = formattedOrcamentoNumber;
+                    limparFormulario();
+                     console.log("Novo orçamento salvo e formulário limpo.");
+                }
+            } catch (error) {
+                console.error("Erro na função salvarOrcamentoBtn click handler:", error);
+                alert("Erro ao salvar orçamento. Verifique o console.");
+            }
+        });
+
+        // --- NOVA FUNÇÃO: Aprovar Orçamento e Gerar Pedido ---
+        btnAprovarOrcamento.addEventListener('click', async () => {
+            console.log("Botão Aprovar Orçamento clicado.");
+
+            // Só permite aprovar se estiver em modo edição e o orçamento não estiver aprovado
+            if (!modoEdicao || !orcamentoId || orcamentoAprovado) {
+                console.warn("Tentativa de aprovar orçamento em estado inválido (não em edição, sem ID, ou já aprovado).");
+                alert("Este orçamento não pode ser aprovado neste momento.");
+                return;
+            }
+
+            // Opcional: Confirmar com o usuário
+            if (!confirm(`Tem certeza que deseja APROVAR este orçamento (#${numeroOrcamentoExibicao.textContent}) e gerar um pedido?`)) {
+                console.log("Aprovação cancelada pelo usuário.");
+                return;
+            }
+
+            // Coleta os dados atuais do orçamento na tela (garante que pegamos as últimas edições antes de aprovar)
+             const clienteSelectValue = clienteSelect.value;
+             if (!clienteSelectValue) {
+                 alert("Cliente não selecionado no orçamento a ser aprovado!");
+                 return; // Não deve acontecer se o orçamento foi carregado corretamente, mas é uma segurança
+             }
+             const cliente = JSON.parse(clienteSelectValue);
+
+             const itens = [];
+             const linhas = tabelaOrcamentoBody.querySelectorAll("tr");
+             if (linhas.length === 0) {
+                 alert("Orçamento sem itens não pode ser aprovado!");
+                 return; // Orçamento vazio não pode virar pedido
+             }
+             linhas.forEach((linha) => {
+                 const quantidade = parseFloat(linha.querySelector(".quantidade")?.value) || 0;
+                 const precoUnitario = parseFloat(linha.querySelector(".preco-unitario")?.value) || 0;
+                 itens.push({
+                     item: linha.querySelector("td:first-child").textContent.trim(),
+                     descricao: linha.querySelector("td:nth-child(2) input").value.trim(),
+                     quantidade: quantidade,
+                     precoUnitario: precoUnitario
+                 });
+             });
+             const totalGeral = parseFloat(totalGeralElement.textContent) || 0;
+             const prazoEntrega = prazoEntregaInput.value.trim();
+             const prazoPagamento = prazoPagamentoInput.value.trim();
+             const numeroOrcamento = numeroOrcamentoExibicao.textContent.replace('#', '').trim(); // Pega o número do orçamento exibido
+
+
+            try {
+                // Usar uma transação para garantir a criação do pedido e a atualização do orçamento são atômicas
+                const { newPedidoNumber, newPedidoId } = await runTransaction(db, async (transaction) => {
+                    console.log("Iniciando transação para aprovação e criação de pedido.");
+
+                    // 1. Obter e incrementar o contador de Pedidos
+                    const pedidoCounterRef = doc(db, "metadata", "pedidoCounter"); // Referência para o contador de pedidos
+                    const pedidoCounterSnap = await transaction.get(pedidoCounterRef);
+
+                    let currentPedidoNumber = 0;
+                    if (pedidoCounterSnap.exists()) {
+                        currentPedidoNumber = pedidoCounterSnap.data().lastPedidoNumber || 0;
+                    }
+                    const nextPedidoNumber = currentPedidoNumber + 1;
+
+                    // Atualiza o contador de Pedidos
+                    transaction.set(pedidoCounterRef, { lastPedidoNumber: nextPedidoNumber });
+                    console.log("Contador de pedido atualizado para:", nextPedidoNumber);
+
+                    // 2. Criar o novo documento de Pedido
+                    const novoPedidoRef = doc(collection(db, "pedidos")); // Cria uma nova referência com ID automático para o pedido
+
+                    const dadosPedido = {
+                        numeroPedido: String(nextPedidoNumber).padStart(2, '0'), // Número sequencial do pedido (01, 02...)
+                        orcamentoId: orcamentoId, // Referência ao orçamento que gerou o pedido
+                        numeroOrcamento: numeroOrcamento, // Salva o número do orçamento também
+                        clienteId: cliente.id,
+                        clienteNome: cliente.nome,
+                        itens: itens, // Copia os itens do orçamento
+                        totalGeral: totalGeral, // Copia o total
+                        prazoEntrega: prazoEntrega, // Copia os prazos
+                        prazoPagamento: prazoPagamento,
+                        dataCriacao: new Date().toISOString(), // Data de criação do pedido
+                        status: 'Aberto' // Status inicial do pedido (ex: 'Aberto', 'Em Produção', 'Concluído')
+                        // Pode adicionar mais campos relevantes para pedidos aqui
+                    };
+
+                    transaction.set(novoPedidoRef, dadosPedido); // Salva o novo pedido na coleção 'pedidos'
+                    console.log("Novo documento de pedido criado na transação com ID:", novoPedidoRef.id, "Número:", dadosPedido.numeroPedido);
+
+
+                    // 3. Atualizar o documento de Orçamento para marcar como aprovado
+                    const orcamentoRef = doc(db, "orcamentos", orcamentoId);
+                    transaction.update(orcamentoRef, {
+                        aprovado: true, // Marca o orçamento como aprovado
+                        numeroPedido: dadosPedido.numeroPedido, // Salva o número do pedido gerado no orçamento
+                        pedidoId: novoPedidoRef.id, // Salva o ID do pedido gerado no orçamento
+                        dataAprovacao: new Date().toISOString() // Opcional: Data de aprovação
+                    });
+                    console.log("Orçamento original atualizado como aprovado.");
+
+
+                    // Retorna os dados do novo pedido para o feedback ao usuário
+                    return { newPedidoNumber: dadosPedido.numeroPedido, newPedidoId: novoPedidoRef.id };
+                });
+
+                // Transação bem-sucedida
+                alert(`Orçamento aprovado com sucesso! Pedido #${newPedidoNumber} gerado.`);
+                console.log(`Orçamento aprovado. Pedido #${newPedidoNumber} (ID: ${newPedidoId}) criado.`);
+
+                // Atualiza a UI para refletir que o orçamento foi aprovado
+                orcamentoAprovado = true;
+                btnAprovarOrcamento.style.display = 'none'; // Esconde o botão Aprovar
+                // Opcional: Atualizar o título ou adicionar uma mensagem de status na tela
+                // mainTitleElement.textContent = `Orçamento Aprovado #${numeroOrcamentoExibicao.textContent}`;
+
+            } catch (error) {
+                console.error("Erro na transação de aprovação/criação de pedido:", error);
+                alert("Erro ao aprovar orçamento e gerar pedido. Verifique o console.");
+            }
+        });
+        // --- FIM NOVA FUNÇÃO: Aprovar Orçamento e Gerar Pedido ---
+
+
+        salvarOrcamentoBtn.addEventListener("click", async () => {
+            console.log("Botão Salvar clicado.");
+            const clienteSelectValue = clienteSelect.value;
+
+            if (!clienteSelectValue) {
+                alert("Selecione um cliente antes de salvar!");
+                console.warn("Cliente não selecionado ao tentar salvar.");
+                return;
+            }
+            const cliente = JSON.parse(clienteSelectValue);
+
+            const itens = [];
+            const linhas = tabelaOrcamentoBody.querySelectorAll("tr");
+            if (linhas.length === 0) {
+                alert("Adicione pelo menos um item ao orçamento!");
+                console.warn("Nenhum item na tabela ao tentar salvar.");
+                return;
+            }
+
+            linhas.forEach((linha) => {
+                const quantidade = parseFloat(linha.querySelector(".quantidade")?.value) || 0;
+                const precoUnitario = parseFloat(linha.querySelector(".preco-unitario")?.value) || 0;
+
+                itens.push({
+                    item: linha.querySelector("td:first-child").textContent.trim(),
+                    descricao: linha.querySelector("td:nth-child(2) input").value.trim(),
+                    quantidade: quantidade,
+                    precoUnitario: precoUnitario
+                });
+            });
+
+            const totalGeral = parseFloat(totalGeralElement.textContent) || 0;
+            const prazoEntrega = prazoEntregaInput.value.trim();
+            const prazoPagamento = prazoPagamentoInput.value.trim();
+
+
+            try {
+                if (modoEdicao && orcamentoId) {
+                    console.log("Modo edição: Atualizando orçamento ID:", orcamentoId);
+                    const orcamentoRef = doc(db, "orcamentos", orcamentoId);
+                    const updateData = {
+                         clienteId: cliente.id,
+                         clienteNome: cliente.nome,
+                         itens: itens,
+                         totalGeral: totalGeral,
+                         prazoEntrega: prazoEntrega,
+                         prazoPagamento: prazoPagamento,
+                         dataAtualizacao: new Date().toISOString()
+                         // Não altera o estado 'aprovado', 'numeroPedido', 'pedidoId' aqui
+                    };
+                    await updateDoc(orcamentoRef, updateData);
+                    alert("Orçamento atualizado com sucesso!");
+                } else {
+                    console.log("Modo novo orçamento: Criando novo com número sequencial.");
+                    const dadosOrcamentoBase = {
+                        clienteId: cliente.id,
+                        clienteNome: cliente.nome,
+                        itens: itens,
+                        totalGeral: totalGeral,
+                        prazoEntrega: prazoEntrega,
+                        prazoPagamento: prazoPagamento,
+                        dataCriacao: new Date().toISOString(),
+                        aprovado: false, // Novo orçamento começa como não aprovado
+                        numeroPedido: null, // Sem número de pedido inicialmente
+                        pedidoId: null // Sem ID de pedido inicialmente
+                    };
+
+                    const newOrcamentoNumber = await runTransaction(db, async (transaction) => {
+                        console.log("Iniciando transação para obter número do orçamento.");
+                        const counterRef = doc(db, "metadata", "orcamentoCounter");
+                        const counterSnap = await transaction.get(counterRef);
+
+                        let currentNumber = 0;
+                        if (counterSnap.exists()) {
+                            currentNumber = counterSnap.data().lastOrcamentoNumber || 0;
+                        }
+                        const nextNumber = currentNumber + 1;
+                        transaction.set(counterRef, { lastOrcamentoNumber: nextNumber });
+                        console.log("Contador de orçamento atualizado para:", nextNumber);
+
+                        const novoOrcamentoRef = doc(collection(db, "orcamentos"));
+                        transaction.set(novoOrcamentoRef, {
+                            ...dadosOrcamentoBase,
+                            numeroOrcamento: String(nextNumber).padStart(2, '0'),
+                        });
+                        console.log("Novo documento de orçamento criado na transação com ID:", novoOrcamentoRef.id, "Número:", String(nextNumber).padStart(2, '0'));
+                        return nextNumber;
+                    });
+
+                    const formattedOrcamentoNumber = String(newOrcamentoNumber).padStart(2, '0');
+                    alert(`Orçamento salvo com sucesso! Número: ${formattedOrcamentoNumber}`);
+
+                    if(numeroOrcamentoExibicao) numeroOrcamentoExibicao.textContent = formattedOrcamentoNumber;
+                    limparFormulario();
+                     console.log("Novo orçamento salvo e formulário limpo.");
+                }
+            } catch (error) {
+                console.error("Erro na função salvarOrcamentoBtn click handler:", error);
+                alert("Erro ao salvar orçamento. Verifique o console.");
+            }
+        });
+
+
+        window.addEventListener("load", async () => {
+            console.log("Window loaded. Carregando clientes e itens...");
             carregarClientes();
             carregarItensCadastrados();
+            const params = new URLSearchParams(window.location.search);
+            orcamentoId = params.get("orcamentoId");
+
+            if (orcamentoId) {
+                console.log("orcamentoId encontrado na URL:", orcamentoId, "Tentando carregar para edição...");
+                const docRef = doc(db, "orcamentos", orcamentoId);
+                try {
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const dados = docSnap.data();
+                        console.log("Orçamento encontrado via URL:", docSnap.id, dados);
+                        preencherFormularioComDados(orcamentoId, dados);
+                         console.log("Formulário preenchido via URL.");
+                    } else {
+                        alert("Orçamento não encontrado na URL!");
+                        console.warn("Orçamento na URL não existe no banco.");
+                        limparFormulario();
+                    }
+                } catch (error) {
+                    console.error("Erro ao carregar orçamento para edição via URL:", error);
+                    alert("Erro ao carregar orçamento. Verifique o console.");
+                    limparFormulario();
+                }
+            } else {
+                 console.log("Nenhum orcamentoId na URL. Iniciando com formulário limpo.");
+                 limparFormulario();
+            }
         });
+
+        document.addEventListener('DOMContentLoaded', () => {
+             console.log("DOM fully loaded.");
+             if(btnBuscarOrcamento) {
+                 btnBuscarOrcamento.addEventListener('click', () => {
+                     const numeroBusca = numeroOrcamentoBuscaInput.value.trim();
+                     buscarOrcamentoPorNumero(numeroBusca);
+                 });
+                 if(numeroOrcamentoBuscaInput) {
+                     numeroOrcamentoBuscaInput.addEventListener('keypress', (event) => {
+                         if (event.key === 'Enter') {
+                             event.preventDefault();
+                             btnBuscarOrcamento.click();
+                         }
+                     });
+                 }
+                  console.log("Event listeners para busca adicionados.");
+             } else {
+                 console.warn("Botão de busca não encontrado!");
+             }
+        });
+
     </script>
 </body>
 </html>
+
