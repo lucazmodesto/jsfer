@@ -3,934 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Pedidos Aprovados</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Lista de Pedidos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary: #3f37c9;
-            --success: #4cc9f0;
-            --danger: #f72585;
-            --warning: #f8961e;
-            --info: #4895ef;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --gray: #6c757d;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --primary-color: #007bff;
+            --secondary-color: #28a745;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+            --border-color: #ced4da;
+            --card-background: #ffffff;
+            --shadow-light: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            --shadow-medium: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
 
         body {
-            background-color: #f5f7fa;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
             padding: 20px;
-            color: #333;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            padding: 25px;
+            background-color: var(--card-background);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-medium);
+            max-width: 1000px;
+            margin: 20px auto;
         }
-        /* Estilos para o parcelamento */
-.parcelamento-section {
-    margin-top: 25px;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 20px;
-}
-
-.parcelamento-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.parcelamento-header h3 {
-    color: var(--dark);
-    font-size: 1.1rem;
-}
-
-.parcelamento-controls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.parcelamento-controls input {
-    width: 60px;
-    padding: 8px 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    text-align: center;
-}
-
-.parcelas-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.parcela-item {
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px;
-    background-color: #f8fafc;
-}
-
-.parcela-item-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    padding-bottom: 5px;
-    border-bottom: 1px dashed #e2e8f0;
-}
-
-.parcela-numero {
-    font-weight: 600;
-    color: var(--dark);
-}
-
-.parcela-valor {
-    font-weight: 600;
-    color: var(--primary);
-}
-
-.parcela-data-input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    margin-top: 5px;
-}
-
-.btn-gerar-parcelas {
-    padding: 8px 15px;
-    background-color: var(--info);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.2s;
-}
-
-.btn-gerar-parcelas:hover {
-    background-color: var(--primary-dark);
-}
 
         h1 {
-            text-align: center;
-            color: var(--dark);
-            margin-bottom: 25px;
-            font-size: 1.8rem;
-            font-weight: 600;
-        }
-
-        .search-container {
-            display: flex;
+            font-size: 2em;
+            color: var(--dark-color);
+            margin-top: 0;
             margin-bottom: 20px;
-            gap: 10px;
-        }
-
-        .search-container input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        .search-container button {
-            padding: 12px 20px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
             font-weight: 500;
-            transition: background 0.2s;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
         }
 
-        .search-container button:hover {
-            background-color: var(--primary-dark);
+        .pedido-item {
+            background-color: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+            box-shadow: var(--shadow-light);
         }
 
-        .pedidos-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .pedido-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        .pedido-item:hover {
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-color);
         }
 
         .pedido-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
-            background-color: var(--primary);
-            color: white;
-            cursor: pointer;
-        }
-
-        .pedido-header h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .pedido-info {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .pedido-status {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
             font-weight: 500;
+            font-size: 1.1em;
+            flex-wrap: wrap;
         }
 
-        .status-aprovado {
-            background-color: var(--success);
-            color: white;
+        .pedido-header span {
+            flex-basis: auto;
+            margin-right: 20px;
+             white-space: nowrap;
         }
+         .pedido-header span:last-child {
+             margin-right: 0;
+         }
 
-        .status-pendente {
-            background-color: var(--warning);
-            color: white;
-        }
+         .pedido-header .delivery-status {
+             font-size: 0.9em;
+             color: #555;
+         }
+          .delivery-status.due-soon {
+              color: #ffc107;
+              font-weight: bold;
+          }
+          .delivery-status.overdue {
+              color: var(--danger-color);
+              font-weight: bold;
+          }
+           .delivery-status.delivered {
+              color: var(--secondary-color);
+           }
 
-        .status-atrasado {
-            background-color: var(--danger);
-            color: white;
-        }
-
-        .pedido-body {
-            display: none;
-            padding: 20px;
-            background-color: white;
-        }
 
         .pedido-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .detail-item {
-            margin-bottom: 8px;
-        }
-
-        .detail-item strong {
-            color: var(--dark);
-            display: block;
-            margin-bottom: 3px;
-            font-size: 0.9rem;
-        }
-
-        .detail-item span {
-            color: var(--gray);
-            font-size: 0.95rem;
-        }
-
-        .dias-entrega {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-
-        table th, table td {
-            border: 1px solid #e2e8f0;
-            padding: 10px;
-            text-align: left;
-        }
-
-        table th {
-            background-color: #f8fafc;
-            color: var(--dark);
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        table td {
-            font-size: 0.9rem;
-        }
-
-        .parcelamento-section {
-            margin-top: 25px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 20px;
-        }
-
-        .parcelamento-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .parcelamento-header h3 {
-            color: var(--dark);
-            font-size: 1.1rem;
-        }
-
-        .parcelamento-controls {
-            display: flex;
-            gap: 10px;
-        }
-
-        .parcelamento-controls input {
-            width: 80px;
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            text-align: center;
-        }
-
-        .parcelamento-controls button {
-            padding: 8px 15px;
-            background-color: var(--info);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.2s;
-        }
-
-        .parcelamento-controls button:hover {
-            background-color: var(--primary);
-        }
-
-        .parcelas-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .parcela-item {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 12px;
-            background-color: #f8fafc;
-        }
-
-        .parcela-item-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding-bottom: 5px;
-            border-bottom: 1px dashed #e2e8f0;
-        }
-
-        .parcela-numero {
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .parcela-valor {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .parcela-data-input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            margin-top: 5px;
-        }
-
-        .action-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
             margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            display: none;
         }
 
-        .action-buttons button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .save-btn {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .save-btn:hover {
-            background-color: #3aa8d8;
-        }
-
-        .cancel-btn {
-            background-color: var(--gray);
-            color: white;
-        }
-
-        .cancel-btn:hover {
-            background-color: #5a6268;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--gray);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
+        .pedido-details h3 {
+            margin-top: 0;
             margin-bottom: 15px;
-            color: #e2e8f0;
+            font-size: 1.3em;
+            color: var(--dark-color);
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
         }
 
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .pedido-details {
-                grid-template-columns: 1fr;
-            }
-            
-            .parcelas-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .search-container {
-                flex-direction: column;
-            }
+        .pedido-details p {
+            margin: 8px 0;
+            font-size: 1em;
         }
+         .pedido-details p strong {
+             color: var(--dark-color);
+         }
 
-        /* Spinner */
-        .fa-spinner {
-            animation: spin 1s linear infinite;
-        }
+         .pedido-details .item-list {
+             margin-top: 20px;
+             margin-bottom: 20px;
+             padding: 15px;
+             background-color: var(--light-color);
+             border-radius: 5px;
+             border: 1px solid var(--border-color);
+         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+         .pedido-details .item-list p {
+             margin: 5px 0;
+             font-size: 0.95em;
+             border-bottom: 1px dotted #ccc;
+             padding-bottom: 5px;
+         }
+          .pedido-details .item-list p:last-child {
+              border-bottom: none;
+              padding-bottom: 0;
+          }
+
+
+         .pedido-details .dates-section {
+             display: flex;
+             gap: 30px;
+             margin-top: 20px;
+             flex-wrap: wrap;
+         }
+
+         .pedido-details .dates-section > div {
+             flex: 1;
+             min-width: 280px;
+             background-color: #f8f9fa;
+             padding: 15px;
+             border-radius: 8px;
+             border: 1px solid var(--border-color);
+         }
+
+         .pedido-details .dates-section label {
+             font-weight: 500;
+             margin-bottom: 8px;
+             color: #495057;
+         }
+
+         .pedido-details .dates-section input[type="date"] {
+             display: block;
+             width: 100%;
+             padding: 10px;
+             border-radius: 4px;
+             border: 1px solid var(--border-color);
+             box-sizing: border-box;
+             font-size: 1rem;
+         }
+
+         .pedido-details .dates-section button {
+             margin-top: 15px;
+             padding: 10px 15px;
+             font-size: 1em;
+             border-radius: 4px;
+             width: 100%;
+             justify-content: center;
+         }
+
+         .btn-save-date {
+             background-color: var(--secondary-color);
+             color: white;
+             border-color: var(--secondary-color);
+         }
+         .btn-save-date:hover {
+             background-color: #218838;
+             border-color: #1e7e34;
+         }
+
+         .btn-update-payment {
+             background-color: var(--primary-color);
+             color: white;
+             border-color: var(--primary-color);
+         }
+         .btn-update-payment:hover {
+             background-color: #0056b3;
+             border-color: #004085;
+         }
+
+
+         .info-message {
+             text-align: center;
+             color: #777;
+             margin-top: 20px;
+         }
+
+         @media (max-width: 768px) {
+             .container {
+                 padding: 20px;
+             }
+             h1 {
+                 font-size: 1.8em;
+             }
+             .pedido-header {
+                 flex-direction: column;
+                 align-items: flex-start;
+             }
+             .pedido-header span {
+                 width: 100%;
+                 text-align: left !important;
+                 margin-right: 0;
+                 margin-bottom: 8px;
+             }
+             .pedido-details .dates-section {
+                 flex-direction: column;
+                 gap: 20px;
+             }
+              .pedido-details .dates-section > div {
+                  min-width: auto;
+              }
+              .pedido-details .dates-section button {
+                  width: auto;
+                  align-self: flex-start;
+              }
+         }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <h1><i class="fas fa-clipboard-list"></i> Gestão de Pedidos Aprovados</h1>
-        
-        <div class="search-container">
-            <input type="text" id="search-input" placeholder="Buscar por cliente ou número...">
-            <button id="search-btn"><i class="fas fa-search"></i> Buscar</button>
-        </div>
-        
-        <div class="pedidos-list" id="pedidos-list">
-            <div class="empty-state">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Carregando pedidos...</p>
-            </div>
+        <h1>Lista de Pedidos</h1>
+
+        <div id="pedidos-list">
+            <p class="info-message">Carregando pedidos...</p>
         </div>
     </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import { 
-        getFirestore, 
-        collection, 
-        getDocs, 
-        query, 
-        where, 
-        orderBy,
-        serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"></script>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
-        authDomain: "novojsfer.firebaseapp.com",
-        projectId: "novojsfer",
-        storageBucket: "novojsfer.appspot.com",
-        messagingSenderId: "610404413021",
-        appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
-    };
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, runTransaction, where, addDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-    // Inicializa o Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
 
-    // Função para exibir mensagem de erro
-    function showError(message) {
-        const pedidosList = document.getElementById("pedidos-list");
-        pedidosList.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h3>Erro ao carregar pedidos</h3>
-                <p>${message}</p>
-                <button onclick="window.location.reload()" style="margin-top: 15px; padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    Tentar novamente
-                </button>
-                <div style="margin-top: 10px; font-size: 0.8em; color: var(--gray);">
-                    Consulte o console para detalhes técnicos
-                </div>
-            </div>
-        `;
-    }
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
+            authDomain: "novojsfer.firebaseapp.com",
+            projectId: "novojsfer",
+            storageBucket: "novojsfer.appspot.com",
+            messagingSenderId: "610404413021",
+            appId: "1:610404413021:web:a6fd70e9a43b68cb22e7b4"
+        };
 
-    // Função principal para carregar pedidos
-    async function carregarPedidos(busca = "") {
-        const pedidosList = document.getElementById("pedidos-list");
-        
-        try {
-            // Mostra estado de carregamento
-            pedidosList.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Carregando pedidos aprovados...</p>
-                </div>
-            `;
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-            // Cria a query base para pedidos aprovados
-            let q = query(
-                collection(db, "orcamentos"),
-                where("status", "==", "aprovado"),
-              
-            );
+        const pedidosListElement = document.getElementById('pedidos-list');
 
-            // Executa a consulta
-            console.log("Executando query no Firestore...");
-            const querySnapshot = await getDocs(q);
-            
-            // Verifica se há resultados
-            if (querySnapshot.empty) {
-                pedidosList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-box-open"></i>
-                        <p>Nenhum pedido aprovado encontrado</p>
-                        <small>Quando um orçamento for marcado como "aprovado", ele aparecerá aqui.</small>
-                    </div>
-                `;
-                return;
+        function formatarValorBRL(valor) {
+            if (isNaN(valor)) return 'R$ 0,00';
+            return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',')}`;
+        }
+
+        function formatarDataExibicao(dataString) {
+            if (!dataString || typeof dataString !== 'string') return 'N/A';
+            const [ano, mes, dia] = dataString.split('-');
+            if (ano && mes && dia) {
+                 return `${dia}/${mes}/${ano}`;
             }
+            return dataString;
+        }
 
-            // Processa os documentos
-            console.log(`${querySnapshot.size} pedidos encontrados`);
-            pedidosList.innerHTML = ""; // Limpa a lista
+         function ajustarDataParaYYYYMMDD(dateString) {
+             if (!dateString) return '';
+             try {
+                 const date = new Date(dateString);
+                 if (!isNaN(date.getTime())) {
+                     return date.toISOString().substring(0, 10);
+                 }
+             } catch (e) {
+                 console.error("Erro ao ajustar data para YYYY-MM-DD:", dateString, e);
+             }
+             return '';
+         }
 
-            // Filtra por busca se necessário
-            const termoBusca = busca.toLowerCase();
-            let pedidos = [];
-            
-            querySnapshot.forEach(doc => {
-                const data = doc.data();
-                // Adiciona verificação de campos obrigatórios
-                if (!data.clienteNome) {
-                    console.warn(`Pedido ${doc.id} está sem nome de cliente`);
-                    data.clienteNome = "Cliente não especificado";
-                }
-                
-                if (!data.totalGeral) {
-                    console.warn(`Pedido ${doc.id} está sem valor total`);
-                    data.totalGeral = 0;
-                }
-                
-                data.id = doc.id;
-                pedidos.push(data);
-            });
+        function calcularDiasRestantes(dataString) {
+            if (!dataString || typeof dataString !== 'string') return 'Data Inválida';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const deliveryDate = new Date(dataString + 'T00:00:00');
+            deliveryDate.setHours(0, 0, 0, 0);
 
-            // Aplica filtro de busca se houver termo
-            if (busca) {
-                pedidos = pedidos.filter(pedido => 
-                    (pedido.clienteNome && pedido.clienteNome.toLowerCase().includes(termoBusca)) ||
-                    (pedido.numero && String(pedido.numero).toLowerCase().includes(termoBusca)) ||
-                    (pedido.id && pedido.id.toLowerCase().includes(termoBusca))
-                );
-                
-                if (pedidos.length === 0) {
-                    pedidosList.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-search"></i>
-                            <p>Nenhum pedido encontrado com "${busca}"</p>
-                            <small>Tente buscar por nome do cliente ou número do pedido</small>
-                        </div>
-                    `;
+            const diffTime = deliveryDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return 'Entrega Hoje';
+            } else if (diffDays > 0) {
+                return `${diffDays} dias para entrega`;
+            } else {
+                return `${Math.abs(diffDays)} dias atrasado`;
+            }
+        }
+
+        async function carregarPedidos() {
+            pedidosListElement.innerHTML = '<p class="info-message">Carregando pedidos...</p>';
+
+            try {
+                const q = query(collection(db, "pedidos"), orderBy("numeroPedido", "desc"));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    pedidosListElement.innerHTML = '<p class="info-message">Nenhum pedido encontrado.</p>';
                     return;
                 }
-            }
 
-            // Exibe os pedidos
-            pedidos.forEach(pedido => {
-                const pedidoCard = criarCardPedido(pedido);
-                pedidosList.appendChild(pedidoCard);
+                pedidosListElement.innerHTML = '';
+
+                querySnapshot.forEach((doc) => {
+                    const pedido = doc.data();
+                    const pedidoId = doc.id;
+
+                    const pedidoItemElement = document.createElement('div');
+                    pedidoItemElement.className = 'pedido-item';
+                    pedidoItemElement.dataset.pedidoId = pedidoId;
+
+                    const diasParaEntrega = pedido.dataEntregaOficial ? calcularDiasRestantes(pedido.dataEntregaOficial) : 'Data Entrega N/A';
+                    let deliveryStatusClass = '';
+                    if (pedido.dataEntregaOficial) {
+                         const today = new Date();
+                         today.setHours(0,0,0,0);
+                         const deliveryDate = new Date(pedido.dataEntregaOficial + 'T00:00:00');
+                         deliveryDate.setHours(0,0,0,0);
+
+                         if (deliveryDate < today) {
+                             deliveryStatusClass = 'overdue';
+                         } else if (deliveryDate.getTime() === today.getTime()) {
+                             deliveryStatusClass = 'due-soon';
+                         } else if (deliveryDate.getTime() - today.getTime() <= (7 * 24 * 60 * 60 * 1000)) {
+                            deliveryStatusClass = 'due-soon';
+                         }
+                    }
+
+
+                    pedidoItemElement.innerHTML = `
+                        <div class="pedido-header">
+                            <span><strong>Pedido #:</strong> ${pedido.numeroPedido || pedidoId.substring(0, 8).toUpperCase()}</span>
+                            <span><strong>Cliente:</strong> ${pedido.clienteNome || 'N/A'}</span>
+                            <span><strong>Total:</strong> ${formatarValorBRL(pedido.totalGeral)}</span>
+                             <span class="delivery-status ${deliveryStatusClass}">${diasParaEntrega}</span>
+                        </div>
+                        <div class="pedido-details">
+                            <h3>Detalhes do Pedido</h3>
+                            <p><strong>Orçamento Original #:</strong> ${pedido.numeroOrcamento || pedido.orcamentoId?.substring(0, 8).toUpperCase() || 'N/A'}</p>
+                            <p><strong>Data Criação Pedido:</strong> ${formatarDataExibicao(pedido.dataCriacao?.substring(0, 10))}</p>
+                            <p><strong>Status:</strong> ${pedido.status || 'N/A'}</p>
+
+                            <div class="item-list">
+                                <strong>Itens:</strong>
+                                ${pedido.itens && pedido.itens.length > 0 ?
+                                    pedido.itens.map(item => `<p>${item.item} - ${item.descricao} (${item.quantidade} x ${formatarValorBRL(item.precoUnitario)}) = ${formatarValorBRL(item.quantidade * item.precoUnitario)}</p>`).join('')
+                                    : '<p>Nenhum item listado.</p>'
+                                }
+                            </div>
+
+                            <div class="dates-section">
+                                <div>
+                                    <label for="data-entrega-${pedidoId}">Data Oficial de Entrega:</label>
+                                    <input type="date" id="data-entrega-${pedidoId}" value="${ajustarDataParaYYYYMMDD(pedido.dataEntregaOficial)}">
+                                    <button class="btn-save-date" data-pedido-id="${pedidoId}" data-date-type="entrega">
+                                        <i class="fas fa-save"></i> Salvar Entrega
+                                    </button>
+                                </div>
+                                <div>
+                                    <label for="data-pagamento-oficial-${pedidoId}">Data Oficial de Pagamento:</label>
+                                    <input type="date" id="data-pagamento-oficial-${pedidoId}" value="${ajustarDataParaYYYYMMDD(pedido.dataPagamentoOficial)}">
+                                    <button class="btn-update-payment" data-pedido-id="${pedidoId}" data-date-type="pagamento">
+                                         <i class="fas fa-dollar-sign"></i> Salvar Pagamento e Atualizar Recebimentos
+                                    </button>
+                                </div>
+                            </div>
+                            ${pedido.orcamentoId ? `<p style="margin-top: 15px;"><a href="telaorcamento.html?orcamentoId=${pedido.orcamentoId}" target="_blank">Ver Orçamento Original</a></p>` : ''}
+                        </div>
+                    `;
+
+                    pedidoItemElement.querySelector('.pedido-header').addEventListener('click', () => {
+                        const details = pedidoItemElement.querySelector('.pedido-details');
+                        details.style.display = details.style.display === 'block' ? 'none' : 'block';
+                    });
+
+                    pedidosListElement.appendChild(pedidoItemElement);
+                });
+
+                addDateButtonListeners();
+
+            } catch (error) {
+                console.error("Erro ao carregar pedidos:", error);
+                pedidosListElement.innerHTML = '<p class="info-message" style="color: var(--danger-color);">Erro ao carregar pedidos.</p>';
+                alert("Erro ao carregar pedidos. Verifique o console para detalhes.");
+            }
+        }
+
+        function addDateButtonListeners() {
+            document.querySelectorAll('.btn-save-date[data-date-type="entrega"]').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const pedidoId = event.target.dataset.pedidoId;
+                    const dateInput = document.getElementById(`data-entrega-${pedidoId}`);
+                    const dataEntregaOficial = ajustarDataParaYYYYMMDD(dateInput.value);
+
+                    if (!dataEntregaOficial) {
+                        alert("Selecione uma data de entrega oficial.");
+                        return;
+                    }
+
+                    try {
+                        const pedidoRef = doc(db, "pedidos", pedidoId);
+                        await updateDoc(pedidoRef, {
+                            dataEntregaOficial: dataEntregaOficial
+                        });
+                        alert("Data de entrega oficial salva!");
+                        carregarPedidos();
+                    } catch (error) {
+                        console.error("Erro ao salvar data de entrega oficial:", error);
+                        alert("Erro ao salvar data de entrega oficial.");
+                    }
+                });
             });
 
-        } catch (error) {
-            console.error("Erro detalhado:", error);
-            
-            let errorMessage = "Ocorreu um erro ao carregar os pedidos";
-            if (error.code === "permission-denied") {
-                errorMessage = "Permissão negada. Verifique as regras de segurança do Firestore.";
-            } else if (error.code === "unavailable") {
-                errorMessage = "Serviço indisponível. Verifique sua conexão com a internet.";
-            }
-            
-            showError(errorMessage);
-        }
-    }
+            document.querySelectorAll('.btn-update-payment[data-date-type="pagamento"]').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const pedidoId = event.target.dataset.pedidoId;
+                    const dateInput = document.getElementById(`data-pagamento-oficial-${pedidoId}`);
+                    const dataPagamentoOficial = ajustarDataParaYYYYMMDD(dateInput.value);
 
-    // Função para criar o card de um pedido
-    function criarCardPedido(pedido) {
-        const card = document.createElement("div");
-        card.className = "pedido-card";
-        
-        // Formata os dados com fallbacks
-        const numeroPedido = pedido.numero?.toString().padStart(3, '0') || pedido.id.substring(0, 6);
-        const clienteNome = pedido.clienteNome || "Cliente não especificado";
-        const dataCriacao = formatarData(pedido.dataCriacao);
-        const prazoEntrega = formatarData(pedido.prazoEntrega);
-        const statusEntrega = calcularStatusEntrega(pedido.prazoEntrega);
-        const diasRestantes = calcularDiasRestantes(pedido.prazoEntrega);
-        const valorTotal = pedido.totalGeral?.toFixed(2) || "0,00";
-        
-        // Cria o HTML do card
-        card.innerHTML = `
-            <div class="pedido-header">
-                <h2>Pedido #${numeroPedido}</h2>
-                <div class="pedido-info">
-                    <span class="pedido-status status-${statusEntrega}">
-                        ${statusEntrega === "aprovado" ? "Aprovado" : statusEntrega === "atrasado" ? "Atrasado" : "Pendente"}
-                    </span>
-                    <span class="dias-entrega">
-                        <i class="far fa-calendar-alt"></i> ${diasRestantes}
-                    </span>
-                </div>
-            </div>
-            <div class="pedido-body">
-                <div class="pedido-details">
-                    <div class="detail-item">
-                        <strong>Cliente</strong>
-                        <span>${clienteNome}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Data de Criação</strong>
-                        <span>${dataCriacao}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Data de Entrega</strong>
-                        <span>${prazoEntrega}</span>
-                    </div>
-                    <div class="detail-item">
-                        <strong>Valor Total</strong>
-                        <span>R$ ${valorTotal}</span>
-                    </div>
-                </div>
+                    if (!dataPagamentoOficial) {
+                        alert("Selecione uma data oficial de pagamento.");
+                        return;
+                    }
 
-                <h3>Itens do Pedido</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Descrição</th>
-                            <th>Qtd.</th>
-                            <th>Preço Unit.</th>
-                            <th>Subtotal</th>
-                        </tr>
-                    </thead>
-                    <!-- Adicione esta seção após a tabela de itens do pedido, dentro do pedido-body -->
-<div class="parcelamento-section">
-    <div class="parcelamento-header">
-        <h3><i class="fas fa-calendar-alt"></i> Parcelamento</h3>
-        <div class="parcelamento-controls">
-            <input type="number" id="num-parcelas-${pedido.id}" min="1" max="12" value="1" placeholder="Parcelas">
-            <button class="btn-gerar-parcelas" data-pedido-id="${pedido.id}">
-                <i class="fas fa-calculator"></i> Gerar
-            </button>
-        </div>
-    </div>
-    <div id="parcelas-container-${pedido.id}" class="parcelas-container"></div>
-    <div class="action-buttons" id="action-buttons-${pedido.id}" style="display: none;">
-        <button class="cancel-btn" data-pedido-id="${pedido.id}">
-            <i class="fas fa-times"></i> Cancelar
-        </button>
-        <button class="save-btn btn-salvar-parcelas" data-pedido-id="${pedido.id}">
-            <i class="fas fa-save"></i> Salvar Parcelas
-        </button>
-    </div>
-</div>
-                    <tbody>
-                        ${pedido.itens?.map(item => `
-                            <tr>
-                                <td>${item.item || "-"}</td>
-                                <td>${item.descricao || "-"}</td>
-                                <td>${item.quantidade || 0}</td>
-                                <td>R$ ${parseFloat(item.precoUnitario || 0).toFixed(2)}</td>
-                                <td>R$ ${parseFloat(item.subtotal || 0).toFixed(2)}</td>
-                            </tr>
-                        `).join("") || "<tr><td colspan='5'>Nenhum item encontrado</td></tr>"}
-                    </tbody>
-                </table>
-            </div>
-        `;
+                    try {
+                        await runTransaction(db, async (transaction) => {
+                            const pedidoRef = doc(db, "pedidos", pedidoId);
+                            const pedidoSnap = await transaction.get(pedidoRef);
 
-        // Adiciona evento de clique para expandir/recolher
-        const header = card.querySelector(".pedido-header");
-        const body = card.querySelector(".pedido-body");
-        header.addEventListener("click", () => {
-            body.style.display = body.style.display === "block" ? "none" : "block";
-        });
+                            if (!pedidoSnap.exists()) {
+                                throw "Pedido não encontrado durante a transação.";
+                            }
+                            const pedidoData = pedidoSnap.data();
+                            const pedidoTotal = pedidoData.totalGeral || 0;
+                            const clienteId = pedidoData.clienteId || null;
+                            const clienteNome = pedidoData.clienteNome || null;
 
-        return card;
-    }
+                            transaction.update(pedidoRef, {
+                                dataPagamentoOficial: dataPagamentoOficial
+                            });
 
-    // Funções auxiliares para formatação
-    function formatarData(data) {
-        if (!data) return "Não definido";
-        
-        try {
-            // Se for Timestamp do Firestore
-            if (data.toDate) {
-                return data.toDate().toLocaleDateString('pt-BR');
-            }
-            // Se for string ISO
-            if (typeof data === 'string') {
-                return new Date(data).toLocaleDateString('pt-BR');
-            }
-            // Se for objeto Date
-            if (data instanceof Date) {
-                return data.toLocaleDateString('pt-BR');
-            }
-            return "Formato inválido";
-        } catch (e) {
-            console.error("Erro ao formatar data:", e);
-            return "Data inválida";
-        }
-    }
+                            const recebimentosCollectionRef = collection(db, "recebimentos");
+                            const qRecebimentoExistente = query(
+                                recebimentosCollectionRef,
+                                where("pedidoId", "==", pedidoId)
+                            );
+                            const recebimentoSnapshot = await transaction.get(qRecebimentoExistente);
 
-    function calcularDiasRestantes(dataEntrega) {
-        if (!dataEntrega) return "Não definido";
-        
-        try {
-            let dataEntregaObj;
-            
-            // Se for Timestamp do Firestore
-            if (dataEntrega.toDate) {
-                dataEntregaObj = dataEntrega.toDate();
-            } 
-            // Se for string ISO
-            else if (typeof dataEntrega === 'string') {
-                dataEntregaObj = new Date(dataEntrega);
-            }
-            // Se for objeto Date
-            else if (dataEntrega instanceof Date) {
-                dataEntregaObj = dataEntrega;
-            } else {
-                return "Formato inválido";
-            }
-            
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-            dataEntregaObj.setHours(0, 0, 0, 0);
-            
-            const diffTime = dataEntregaObj - hoje;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 0) return "Hoje";
-            if (diffDays < 0) return `Atrasado (${Math.abs(diffDays)} dias)`;
-            return `${diffDays} dias`;
-        } catch (e) {
-            console.error("Erro ao calcular dias restantes:", e);
-            return "Erro no cálculo";
-        }
-    }
-        // Adicione estas funções ao seu módulo
+                            if (!recebimentoSnapshot.empty) {
+                                const recebimentoDoc = recebimentoSnapshot.docs[0];
+                                const recebimentoRef = doc(db, "recebimentos", recebimentoDoc.id);
+                                transaction.update(recebimentoRef, {
+                                    valor: pedidoTotal,
+                                    dataPagamento: dataPagamentoOficial,
+                                    clienteId: clienteId,
+                                    clienteNome: clienteNome,
+                                    pago: false, // Novos recebimentos começam como pendentes
+                                });
+                           
+                            }
+                        });
 
-// Função para gerar parcelas
-function gerarParcelas(pedidoId, total, numParcelas) {
-    const container = document.getElementById(`parcelas-container-${pedidoId}`);
-    const actionButtons = document.getElementById(`action-buttons-${pedidoId}`);
-    container.innerHTML = '';
-    
-    // Calcula o valor de cada parcela
-    const valorParcela = total / numParcelas;
-    
-    // Data atual para começar o parcelamento
-    const dataAtual = new Date();
-    
-    for (let i = 0; i < numParcelas; i++) {
-        // Calcula a data de vencimento (30 dias entre cada parcela)
-        const dataVencimento = new Date(dataAtual);
-        dataVencimento.setDate(dataVencimento.getDate() + (i * 30));
-        
-        // Formata a data para o input type="date"
-        const formattedDate = dataVencimento.toISOString().split('T')[0];
-        
-        const parcelaItem = document.createElement('div');
-        parcelaItem.className = 'parcela-item';
-        parcelaItem.innerHTML = `
-            <div class="parcela-item-header">
-                <span class="parcela-numero">Parcela ${String(i + 1).padStart(2, '0')}</span>
-                <span class="parcela-valor">R$ ${valorParcela.toFixed(2)}</span>
-            </div>
-            <input type="date" class="parcela-data-input" value="${formattedDate}" data-parcela-index="${i}">
-        `;
-        
-        container.appendChild(parcelaItem);
-    }
-    
-    actionButtons.style.display = 'flex';
-}
-
-// Função para salvar parcelas no calendário de recebimentos
-async function salvarParcelas(pedidoId, pedido) {
-    const container = document.getElementById(`parcelas-container-${pedidoId}`);
-    const inputsData = container.querySelectorAll('.parcela-data-input');
-    const numParcelas = inputsData.length;
-    const valorParcela = pedido.totalGeral / numParcelas;
-    
-    try {
-        // Para cada data de vencimento, cria um recebimento
-        for (let i = 0; i < numParcelas; i++) {
-            const dataVencimento = inputsData[i].value;
-            
-            await addDoc(collection(db, "recebimentos"), {
-                descricao: `Parcela ${String(i + 1).padStart(2, '0')} - Pedido #${pedido.numero || pedido.id.substring(0, 6)}`,
-                valor: valorParcela,
-                dataPagamento: dataVencimento,
-                clienteId: pedido.clienteId || null,
-                clienteNome: pedido.clienteNome || null,
-                telefone: pedido.telefone || null,
-                pago: false,
-                pedidoId: pedido.id,
-                parcelamento: `${i + 1}/${numParcelas}`,
-                createdAt: new Date()
+                        alert("Data de pagamento oficial salva e recebimento atualizado!");
+                    } catch (error) {
+                        console.error("Erro na transação de salvar pagamento/atualizar recebimento:", error);
+                        alert("Erro ao salvar data de pagamento oficial e atualizar recebimento.");
+                    }
+                });
             });
         }
-        
-        alert(`${numParcelas} parcelas foram criadas com sucesso no calendário de recebimentos!`);
-        
-        // Limpa o container de parcelas
-        container.innerHTML = '';
-        document.getElementById(`action-buttons-${pedidoId}`).style.display = 'none';
-        
-    } catch (error) {
-        console.error("Erro ao salvar parcelas:", error);
-        alert("Erro ao salvar parcelas. Verifique o console para detalhes.");
-    }
-}
-
-// Event listeners para os botões de parcelamento
-document.addEventListener('click', async (e) => {
-    // Botão Gerar Parcelas
-    if (e.target.classList.contains('btn-gerar-parcelas') || e.target.closest('.btn-gerar-parcelas')) {
-        const button = e.target.classList.contains('btn-gerar-parcelas') ? e.target : e.target.closest('.btn-gerar-parcelas');
-        const pedidoId = button.getAttribute('data-pedido-id');
-        const numParcelas = parseInt(document.getElementById(`num-parcelas-${pedidoId}`).value) || 1;
-        
-        // Encontra o pedido correspondente
-        const q = query(collection(db, "orcamentos"), where("id", "==", pedidoId));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-            const pedido = querySnapshot.docs[0].data();
-            gerarParcelas(pedidoId, pedido.totalGeral, numParcelas);
-        }
-    }
-    
-    // Botão Salvar Parcelas
-    if (e.target.classList.contains('btn-salvar-parcelas') || e.target.closest('.btn-salvar-parcelas')) {
-        const button = e.target.classList.contains('btn-salvar-parcelas') ? e.target : e.target.closest('.btn-salvar-parcelas');
-        const pedidoId = button.getAttribute('data-pedido-id');
-        
-        // Encontra o pedido correspondente
-        const q = query(collection(db, "orcamentos"), where("id", "==", pedidoId));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-            const pedido = querySnapshot.docs[0].data();
-            await salvarParcelas(pedidoId, pedido);
-        }
-    }
-    
-    // Botão Cancelar
-    if (e.target.classList.contains('cancel-btn') || e.target.closest('.cancel-btn')) {
-        const button = e.target.classList.contains('cancel-btn') ? e.target : e.target.closest('.cancel-btn');
-        const pedidoId = button.getAttribute('data-pedido-id');
-        
-        document.getElementById(`parcelas-container-${pedidoId}`).innerHTML = '';
-        document.getElementById(`action-buttons-${pedidoId}`).style.display = 'none';
-    }
-});
 
 
-    function calcularStatusEntrega(dataEntrega) {
-        if (!dataEntrega) return "pendente";
-        
-        try {
-            let dataEntregaObj;
-            
-            if (dataEntrega.toDate) {
-                dataEntregaObj = dataEntrega.toDate();
-            } 
-            else if (typeof dataEntrega === 'string') {
-                dataEntregaObj = new Date(dataEntrega);
-            }
-            else if (dataEntrega instanceof Date) {
-                dataEntregaObj = dataEntrega;
-            } else {
-                return "pendente";
-            }
-            
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-            dataEntregaObj.setHours(0, 0, 0, 0);
-            
-            if (dataEntregaObj < hoje) return "atrasado";
-            return "aprovado";
-        } catch (e) {
-            console.error("Erro ao calcular status de entrega:", e);
-            return "pendente";
-        }
-    }
+        window.addEventListener('load', carregarPedidos);
 
-    // Eventos
-    document.getElementById("search-btn").addEventListener("click", () => {
-        const busca = document.getElementById("search-input").value.trim();
-        carregarPedidos(busca);
-    });
 
-    document.getElementById("search-input").addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-            const busca = document.getElementById("search-input").value.trim();
-            carregarPedidos(busca);
-        }
-    });
-
-    // Inicia o carregamento quando a página estiver pronta
-    document.addEventListener("DOMContentLoaded", () => {
-        console.log("Página carregada, iniciando busca por pedidos...");
-        carregarPedidos();
-    });
-</script>
+    </script>
 </body>
 </html>
+
