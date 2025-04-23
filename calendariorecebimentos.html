@@ -674,7 +674,8 @@
                 <h2 id="day-details-title">Detalhes do Dia</h2>
                 <button id="close-day-details">X</button>
             </div>
-            <div id="day-payments-list"></div>
+            <div id="day-payments-list">
+                </div>
         </div>
     </div>
 
@@ -692,8 +693,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-        import { deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
@@ -707,44 +707,43 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Variáveis globais
+        // Variáveis de estado
         let currentDate = new Date();
         let payments = [];
-        let clients = []; // Mantém a lista de clientes para referência
+        let clients = [];
 
-        // Elementos DOM
+        // Elementos DOM (referências obtidas uma vez)
         const calendarDays = document.getElementById('calendar-days');
         const currentMonthElement = document.getElementById('current-month');
         const prevMonthBtn = document.getElementById('prev-month');
         const nextMonthBtn = document.getElementById('next-month');
-        const modal = document.getElementById('payment-modal'); // Modal adicionar/editar
+        const modal = document.getElementById('payment-modal');
         const openModalBtn = document.getElementById('open-modal');
         const cancelModalBtn = document.getElementById('cancel-payment');
         const paymentForm = document.getElementById('payment-form');
         const totalPendenteElement = document.getElementById('total-pendente');
         const totalRecebidoElement = document.getElementById('total-recebido');
-        const dayDetailsModal = document.getElementById('day-details-modal'); // Modal detalhes do dia
+        const dayDetailsModal = document.getElementById('day-details-modal');
         const dayDetailsTitle = document.getElementById('day-details-title');
-        const dayPaymentsList = document.getElementById('day-payments-list');
+        const dayPaymentsList = document.getElementById('day-payments-list'); // Elemento pai para delegação
         const closeDayDetailsBtn = document.getElementById('close-day-details');
-        const btnDemonstrativo = document.getElementById('btn-demonstrativo'); // Botão demonstrativo
-        const demonstrativoModal = document.getElementById('demonstrativo-modal'); // Novo modal demonstrativo
+        const btnDemonstrativo = document.getElementById('btn-demonstrativo');
+        const demonstrativoModal = document.getElementById('demonstrativo-modal');
         const demonstrativoTitle = document.getElementById('demonstrativo-title');
         const demonstrativoList = document.getElementById('demonstrativo-list');
-        const closeDemonstrativoBtn = document.getElementById('close-demonstrativo'); // Botão fechar no header
-        const closeDemonstrativoBtnBottom = document.getElementById('close-demonstrativo-btn-bottom'); // Botão fechar no final
+        const closeDemonstrativoBtn = document.getElementById('close-demonstrativo');
+        const closeDemonstrativoBtnBottom = document.getElementById('close-demonstrativo-btn-bottom');
 
-        // Função para corrigir o problema de data (garante formato 'YYYY-MM-DD')
-        // Essencial para consistência com o Firebase e comparações
+
+        // --- Funções auxiliares ---
+
         function ajustarDataParaFirestore(dataString) {
             if (!dataString) return null;
-            // Se a data já estiver no formato YYYY-MM-DD, retorna direto
             if (/^\d{4}-\d{2}-\d{2}$/.test(dataString)) {
                 return dataString;
             }
-            // Tenta converter de outros formatos comuns (pode precisar de mais lógica para cobrir todos os casos)
             try {
-                const date = new Date(dataString + 'T00:00:00'); // Adiciona T00:00:00 para evitar problemas de fuso horário
+                const date = new Date(dataString + 'T00:00:00');
                 if (!isNaN(date.getTime())) {
                     const year = date.getFullYear();
                     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -754,59 +753,531 @@
             } catch (e) {
                 console.error("Erro ao ajustar data:", dataString, e);
             }
-            return null; // Retorna null se a data for inválida
+            return null;
         }
 
-
-        // Função para exibir data formatada (DD/MM/YYYY)
         function formatarDataExibicao(dataString) {
             if (!dataString) return '';
-             // Assume que a data string é YYYY-MM-DD
             const [ano, mes, dia] = dataString.split('-');
             return `${dia}/${mes}/${ano}`;
         }
 
-         // Função para formatar valores monetários em BRL
-         function formatarValorBRL(valor) {
-             if (isNaN(valor)) return 'R$ 0,00';
-             return `R$ ${valor.toFixed(2).replace('.', ',')}`;
-         }
+        function formatarValorBRL(valor) {
+            if (isNaN(valor)) return 'R$ 0,00';
+            return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+        }
+
+        function getMonthName(month) {
+            const months = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            return months[month];
+        }
+
+        function criarDiaVazio() {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'day-cell';
+            emptyDay.style.visibility = 'hidden';
+            emptyDay.style.pointerEvents = 'none';
+            return emptyDay;
+        }
+
+        // --- Funções de Carregamento e Atualização da UI ---
+
+        async function carregarClientes() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "clientes"));
+                clients = [];
+                const clienteSelect = document.getElementById('cliente');
+                clienteSelect.innerHTML = '<option value="">Selecione...</option>';
+
+                querySnapshot.forEach((doc) => {
+                    const client = doc.data();
+                    clients.push({
+                        id: doc.id,
+                        ...client
+                    });
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify({
+                        id: doc.id,
+                        nome: client.empresa || client.nome || 'Cliente Desconhecido',
+                        telefone: client.telefone || ''
+                    });
+                    option.textContent = `${client.empresa || client.nome || 'Cliente Desconhecido'} ${client.comprador ? ' - ' + client.comprador : ''}`;
+                    clienteSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Erro ao carregar clientes:", error);
+                alert("Erro ao carregar lista de clientes");
+            }
+        }
+
+        async function carregarPagamentos() {
+            try {
+                const q = query(collection(db, "recebimentos"), orderBy("dataPagamento"));
+                const querySnapshot = await getDocs(q);
+                payments = [];
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+
+                    if (!data.dataPagamento || typeof data.dataPagamento !== 'string') {
+                        console.warn("Recebimento com data inválida/ausente:", doc.id, data.dataPagamento);
+                        return;
+                    }
+
+                    payments.push({
+                        id: doc.id,
+                        descricao: data.descricao || "Sem Descrição",
+                        valor: data.valor || 0,
+                        dataPagamento: data.dataPagamento,
+                        clienteId: data.clienteId || null,
+                        clienteNome: data.clienteNome || null,
+                        telefone: data.telefone || null,
+                        pago: data.pago || false
+                    });
+                });
+
+                atualizarCalendario();
+            } catch (error) {
+                console.error("Erro ao carregar recebimentos:", error);
+                alert("Erro ao carregar recebimentos. Verifique o console para detalhes.");
+            }
+        }
+
+        function atualizarCalendario() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            currentMonthElement.textContent = `${getMonthName(month)} de ${year}`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            const startDay = firstDay.getDay();
+            const totalDays = lastDay.getDate();
+
+            calendarDays.innerHTML = '';
+
+            for (let i = 0; i < startDay; i++) {
+                calendarDays.appendChild(criarDiaVazio());
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            for (let day = 1; day <= totalDays; day++) {
+                const date = new Date(year, month, day);
+                const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+                const dayPayments = payments.filter(p => {
+                    return p.dataPagamento === dateString;
+                });
+
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day-cell';
+
+                if (date.toDateString() === today.toDateString()) {
+                    dayElement.classList.add('today');
+                }
+
+                const hasPastDue = dayPayments.some(p => !p.pago && new Date(p.dataPagamento + 'T00:00:00') < today);
+                const allPaid = dayPayments.length > 0 && dayPayments.every(p => p.pago);
+
+                if (hasPastDue) {
+                    dayElement.classList.add('past-unpaid');
+                } else if (allPaid) {
+                    dayElement.classList.add('all-paid');
+                }
+
+                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
+
+                if (dayPayments.length > 0) {
+                    const paymentCount = document.createElement('div');
+                    paymentCount.className = 'payment-count';
+                    paymentCount.textContent = `${dayPayments.length} rec.`;
+                    dayElement.appendChild(paymentCount);
+                }
+
+                 // Adiciona evento de clique para mostrar detalhes do dia USANDO DELEGAÇÃO NO ELEMENTO PAI (calendarDays)
+                 // O listener real será adicionado abaixo, no DOMContentLoaded, para o elemento calendar-days
+                 // Este clique na célula do dia apenas chama a função que exibe o modal de detalhes
+                 dayElement.addEventListener('click', () => {
+                     mostrarDetalhesDia(date, dayPayments);
+                 });
 
 
-        // Inicialização
+                calendarDays.appendChild(dayElement);
+            }
+
+            const daysInGrid = calendarDays.children.length;
+            const remainingCells = daysInGrid % 7 === 0 ? 0 : 7 - (daysInGrid % 7);
+
+             for (let i = 0; i < remainingCells; i++) {
+                calendarDays.appendChild(criarDiaVazio());
+            }
+
+             atualizarResumo();
+        }
+
+        function mostrarDetalhesDia(date, dayPayments) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dayDetailsTitle.textContent = `Detalhes para ${date.toLocaleDateString('pt-BR', options)}`;
+            dayPaymentsList.innerHTML = '';
+
+            if (dayPayments.length === 0) {
+                dayPaymentsList.innerHTML = '<p style="text-align: center; color: #64748b;">Nenhum recebimento para este dia.</p>';
+            } else {
+                dayPayments.sort((a, b) => {
+                    const aDate = new Date(a.dataPagamento + 'T00:00:00');
+                    const bDate = new Date(b.dataPagamento + 'T00:00:00');
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+
+                    const aStatus = a.pago ? 2 : aDate < today ? 0 : 1;
+                    const bStatus = b.pago ? 2 : bDate < today ? 0 : 1;
+
+                    if (aStatus !== bStatus) {
+                        return aStatus - bStatus;
+                    } else {
+                        return aDate.getTime() - bDate.getTime();
+                    }
+                });
+
+
+                dayPayments.forEach(payment => {
+                    const paymentDate = new Date(payment.dataPagamento + 'T00:00:00');
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const isPastDue = !payment.pago && paymentDate < today;
+
+                    const paymentElement = document.createElement('div');
+                    paymentElement.className = `day-payment ${payment.pago ? 'paid' : isPastDue ? 'past-due' : ''}`;
+
+                    // Armazena o ID do pagamento no elemento pai para acesso via delegação
+                    paymentElement.dataset.paymentId = payment.id;
+                     // Armazena os dados completos do pagamento no elemento pai para acesso fácil (cuidado com performance para muitos dados)
+                    paymentElement.dataset.paymentData = JSON.stringify(payment);
+
+
+                    paymentElement.innerHTML = `
+                        <h3>${payment.descricao}</h3>
+                        <p><strong>Valor:</strong> ${formatarValorBRL(payment.valor)}</p>
+                        ${payment.clienteNome ? `<p><strong>Cliente:</strong> ${payment.clienteNome}</p>` : ''}
+                        <p><strong>Status:</strong> ${payment.pago ? 'Pago' : isPastDue ? 'Atrasado' : 'Pendente'}</p>
+                        <p><strong>Vencimento:</strong> ${formatarDataExibicao(payment.dataPagamento)}</p>
+
+                        <div class="payment-actions">
+                            ${!payment.pago ? `
+                                <button class="btn-pago">
+                                    <i class="fas fa-check-circle"></i> Pago
+                                </button>
+                                <button class="btn-editar">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn-excluir">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </button>
+                                ${payment.telefone ? `
+                                    <button class="btn-whatsapp">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
+                                    </button>
+                                ` : ''}
+                            ` : `
+                                 <button class="btn-excluir">
+                                     <i class="fas fa-trash-alt"></i> Excluir
+                                 </button>
+                             `}
+                        </div>
+                    `;
+
+                    dayPaymentsList.appendChild(paymentElement);
+                });
+            }
+
+            dayDetailsModal.style.display = 'flex';
+        }
+
+        function gerarDemonstrativo() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            demonstrativoTitle.textContent = `Demonstrativo de ${getMonthName(month)} de ${year}`;
+            demonstrativoList.innerHTML = '';
+
+            const paymentsThisMonth = payments.filter(payment => {
+                if (!payment.dataPagamento || typeof payment.dataPagamento !== 'string') {
+                    return false;
+                }
+                const [ano, mes, dia] = payment.dataPagamento.split('-');
+                return parseInt(ano) === year && (parseInt(mes) - 1) === month;
+            });
+
+            if (paymentsThisMonth.length === 0) {
+                demonstrativoList.innerHTML = '<p style="text-align: center; color: #64748b;">Nenhum recebimento neste mês para gerar o demonstrativo.</p>';
+            } else {
+                const summaryByClient = {};
+
+                paymentsThisMonth.forEach(payment => {
+                    const clientId = payment.clienteId || 'sem_cliente';
+                    const clientName = payment.clienteNome || 'Sem Cliente';
+
+                    if (!summaryByClient[clientId]) {
+                        summaryByClient[clientId] = {
+                            name: clientName,
+                            paid: 0,
+                            pending: 0,
+                            total: 0
+                        };
+                    }
+
+                    summaryByClient[clientId].total += payment.valor;
+                    if (payment.pago) {
+                        summaryByClient[clientId].paid += payment.valor;
+                    } else {
+                        summaryByClient[clientId].pending += payment.valor;
+                    }
+                });
+
+                 const clientsSummaryArray = Object.values(summaryByClient);
+
+                 clientsSummaryArray.sort((a, b) => a.name.localeCompare(b.name));
+
+
+                clientsSummaryArray.forEach(clientSummary => {
+                    const clientSummaryElement = document.createElement('div');
+                    clientSummaryElement.className = 'demonstrativo-client-summary';
+
+                    clientSummaryElement.innerHTML = `
+                        <h3>${clientSummary.name}</h3>
+                        <p><strong>Total do Cliente:</strong> ${formatarValorBRL(clientSummary.total)}</p>
+                        <p class="paid-total"><strong>Total Pago:</strong> ${formatarValorBRL(clientSummary.paid)}</p>
+                        <p class="pending-total"><strong>Total Pendente:</strong> ${formatarValorBRL(clientSummary.pending)}</p>
+                    `;
+                    demonstrativoList.appendChild(clientSummaryElement);
+                });
+            }
+
+            demonstrativoModal.style.display = 'flex';
+        }
+
+        function atualizarResumo() {
+            let totalPendenteMes = 0;
+            let totalRecebidoMes = 0;
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            const paymentsThisMonth = payments.filter(payment => {
+                if (!payment.dataPagamento || typeof payment.dataPagamento !== 'string') {
+                    return false;
+                }
+                const [ano, mes, dia] = payment.dataPagamento.split('-');
+                return parseInt(ano) === year && (parseInt(mes) - 1) === month;
+            });
+
+            paymentsThisMonth.forEach(payment => {
+                if (payment.pago) {
+                    totalRecebidoMes += payment.valor;
+                } else {
+                    totalPendenteMes += payment.valor;
+                }
+            });
+
+            totalPendenteElement.textContent = formatarValorBRL(totalPendenteMes);
+            totalRecebidoElement.textContent = formatarValorBRL(totalRecebidoMes);
+        }
+
+        // --- Funções de Ação (Firebase) ---
+
+        async function adicionarPagamento() {
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const dataInput = document.getElementById('data-pagamento').value;
+            const dataCorrigida = ajustarDataParaFirestore(dataInput);
+            const clienteSelect = document.getElementById('cliente');
+            const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
+
+            if (!descricao || !descricao.trim()) {
+                alert("Informe uma descrição válida!");
+                return;
+            }
+
+            if (isNaN(valor) || valor <= 0) {
+                alert("Informe um valor válido maior que zero!");
+                return;
+            }
+
+            if (!dataCorrigida) {
+                alert("Data de vencimento inválida!");
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "recebimentos"), {
+                    descricao: descricao.trim(),
+                    valor: valor,
+                    dataPagamento: dataCorrigida,
+                    clienteId: clienteSelecionado?.id || null,
+                    clienteNome: clienteSelecionado?.nome || null,
+                    telefone: clienteSelecionado?.telefone || null,
+                    pago: false,
+                    createdAt: new Date()
+                });
+
+                modal.style.display = 'none';
+                paymentForm.reset();
+                document.getElementById('cliente').value = '';
+                await carregarPagamentos();
+                alert(`Recebimento adicionado para ${formatarDataExibicao(dataCorrigida)} com sucesso!`);
+            } catch (error) {
+                console.error("Erro ao adicionar recebimento:", error);
+                alert("Erro ao adicionar recebimento");
+            }
+        }
+
+        async function salvarEdicao(paymentId) {
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const dataInput = document.getElementById('data-pagamento').value;
+            const dataCorrigida = ajustarDataParaFirestore(dataInput);
+            const clienteSelect = document.getElementById('cliente');
+            const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
+
+            if (!descricao || !descricao.trim()) {
+                alert("Informe uma descrição válida!");
+                return;
+            }
+            if (isNaN(valor) || valor <= 0) {
+                alert("Informe um valor válido maior que zero!");
+                return;
+            }
+            if (!dataCorrigida) {
+                alert("Data de vencimento inválida!");
+                return;
+            }
+
+            try {
+                const paymentRef = doc(db, "recebimentos", paymentId);
+                await updateDoc(paymentRef, {
+                    descricao: descricao.trim(),
+                    valor: valor,
+                    dataPagamento: dataCorrigida,
+                    clienteId: clienteSelecionado?.id || null,
+                    clienteNome: clienteSelecionado?.nome || null,
+                    telefone: clienteSelecionado?.telefone || null,
+                });
+
+                modal.style.display = 'none';
+                paymentForm.reset();
+                paymentForm.removeAttribute('data-editar-id');
+                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento';
+                document.getElementById('cliente').value = '';
+                await carregarPagamentos();
+                alert(`Recebimento "${descricao.trim()}" atualizado com sucesso!`);
+
+            } catch (error) {
+                console.error("Erro ao salvar edição:", error);
+                alert("Erro ao salvar edição do recebimento.");
+            }
+        }
+
+        async function marcarComoPago(paymentId) {
+            if (confirm('Tem certeza que deseja marcar este recebimento como pago?')) {
+                try {
+                    const paymentRef = doc(db, "recebimentos", paymentId);
+                    await updateDoc(paymentRef, {
+                        pago: true
+                    });
+                    alert('Recebimento marcado como pago!');
+                    dayDetailsModal.style.display = 'none';
+                    await carregarPagamentos();
+                } catch (error) {
+                    console.error("Erro ao marcar como pago:", error);
+                    alert("Erro ao marcar recebimento como pago.");
+                }
+            }
+        }
+
+        async function excluirPagamento(paymentId) {
+            if (confirm('Tem certeza que deseja excluir este recebimento?')) {
+                try {
+                    await deleteDoc(doc(db, "recebimentos", paymentId));
+                    alert('Recebimento excluído com sucesso!');
+                    dayDetailsModal.style.display = 'none';
+                    await carregarPagamentos();
+                } catch (error) {
+                    console.error("Erro ao excluir recebimento:", error);
+                    alert("Erro ao excluir recebimento.");
+                }
+            }
+        }
+
+        function cobrarViaWhatsapp(payment) {
+            if (!payment || !payment.telefone) {
+                alert('Telefone do cliente não disponível para enviar mensagem.');
+                return;
+            }
+
+            const telefone = payment.telefone.replace(/\D/g, '');
+            const valorFormatado = formatarValorBRL(payment.valor);
+            const dataFormatada = formatarDataExibicao(payment.dataPagamento);
+            const descricao = payment.descricao;
+            const clienteNome = payment.clienteNome || 'Cliente';
+
+            const mensagem = encodeURIComponent(
+                `Olá ${clienteNome}! 👋\n\n` +
+                `Gostaríamos de lembrar sobre o recebimento pendente:\n` +
+                `Descrição: ${descricao}\n` +
+                `Valor: ${valorFormatado}\n` +
+                `Vencimento: ${dataFormatada}\n\n` +
+                `Por favor, realize o pagamento o quanto antes para evitar atrasos.\n` +
+                `Agradecemos a sua atenção!`
+            );
+
+            const whatsappUrl = `https://wa.me/${telefone}?text=${mensagem}`;
+
+            window.open(whatsappUrl, '_blank');
+        }
+
+
+        // --- Inicialização e Listeners ---
+
         document.addEventListener('DOMContentLoaded', () => {
-            carregarClientes(); // Carrega clientes primeiro
-            carregarPagamentos(); // Depois carrega pagamentos
+            carregarClientes();
+            carregarPagamentos();
 
             // Listeners para navegação do calendário
             prevMonthBtn.addEventListener('click', () => {
                 currentDate.setMonth(currentDate.getMonth() - 1);
                 atualizarCalendario();
-                // atualizarResumo() é chamado dentro de atualizarCalendario() agora
             });
 
             nextMonthBtn.addEventListener('click', () => {
                 currentDate.setMonth(currentDate.getMonth() + 1);
                 atualizarCalendario();
-                 // atualizarResumo() é chamado dentro de atualizarCalendario() agora
             });
 
             // Listener para abrir modal de adicionar
             openModalBtn.addEventListener('click', () => {
                 modal.style.display = 'flex';
-                // Define a data atual como padrão no formato YYYY-MM-DD
                 const hoje = new Date();
                 const dataFormatada = hoje.toISOString().substring(0, 10);
                 document.getElementById('data-pagamento').value = dataFormatada;
+                paymentForm.reset();
+                paymentForm.removeAttribute('data-editar-id');
+                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento';
+                document.getElementById('cliente').value = '';
             });
 
             // Listener para cancelar modal de adicionar/editar
             cancelModalBtn.addEventListener('click', () => {
                 modal.style.display = 'none';
                 paymentForm.reset();
-                paymentForm.removeAttribute('data-editar-id'); // Limpa ID de edição
-                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento'; // Restaura título
-                 document.getElementById('cliente').value = ''; // Limpa a seleção do cliente
+                paymentForm.removeAttribute('data-editar-id');
+                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento';
+                document.getElementById('cliente').value = '';
             });
 
             // Listener para submit do formulário (adicionar ou editar)
@@ -827,7 +1298,7 @@
 
             // Listener para o botão Gerar Demonstrativo
             btnDemonstrativo.addEventListener('click', () => {
-                gerarDemonstrativo(); // Chama a nova função para gerar e exibir o demonstrativo
+                gerarDemonstrativo();
             });
 
              // Listeners para fechar o modal do Demonstrativo
@@ -839,419 +1310,43 @@
                 demonstrativoModal.style.display = 'none';
             });
 
+            // *** Delegação de eventos para os botões na lista de pagamentos do dia ***
+            dayPaymentsList.addEventListener('click', (event) => {
+                const target = event.target;
+                const button = target.closest('button'); // Encontra o botão mais próximo (ou o próprio botão)
+
+                if (button) {
+                     // Encontra o elemento pai 'day-payment' para obter o ID e dados do pagamento
+                    const paymentElement = button.closest('.day-payment');
+                    if (!paymentElement) return; // Sai se não encontrar o elemento pai esperado
+
+                    const paymentId = paymentElement.dataset.paymentId;
+                    const paymentDataString = paymentElement.dataset.paymentData;
+                    const paymentData = paymentDataString ? JSON.parse(paymentDataString) : null;
+
+                    if (!paymentId) {
+                        console.error("ID do pagamento não encontrado no elemento.");
+                        return;
+                    }
+
+                    // Verifica qual botão foi clicado pela classe e chama a função apropriada
+                    if (button.classList.contains('btn-pago')) {
+                        marcarComoPago(paymentId);
+                    } else if (button.classList.contains('btn-editar')) {
+                        editarPagamento(paymentId);
+                    } else if (button.classList.contains('btn-excluir')) {
+                        excluirPagamento(paymentId);
+                    } else if (button.classList.contains('btn-whatsapp')) {
+                         if (paymentData) {
+                            cobrarViaWhatsapp(paymentData); // Passa os dados completos para a função do WhatsApp
+                         } else {
+                            alert('Dados do pagamento não disponíveis para o WhatsApp.');
+                         }
+                    }
+                }
+            });
+
         }); // Fim do DOMContentLoaded
-
-
-        // Carrega clientes do Firebase
-        async function carregarClientes() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "clientes"));
-                clients = []; // Limpa a lista atual de clientes
-                const clienteSelect = document.getElementById('cliente');
-                clienteSelect.innerHTML = '<option value="">Selecione...</option>'; // Opção padrão
-
-                querySnapshot.forEach((doc) => {
-                    const client = doc.data();
-                     // Adiciona cliente à lista global para referência
-                    clients.push({
-                        id: doc.id,
-                        ...client
-                    });
-
-                    // Cria uma opção para cada cliente no select do modal de pagamento
-                    const option = document.createElement('option');
-                     // Armazena ID, nome da empresa e telefone na value como string JSON
-                    option.value = JSON.stringify({
-                        id: doc.id,
-                        nome: client.empresa || client.nome || 'Cliente Desconhecido', // Tenta empresa ou nome
-                        telefone: client.telefone || '' // Adiciona telefone (tratado como string)
-                    });
-                    option.textContent = `${client.empresa || client.nome || 'Cliente Desconhecido'} ${client.comprador ? ' - ' + client.comprador : ''}`;
-                    clienteSelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error("Erro ao carregar clientes:", error);
-                alert("Erro ao carregar lista de clientes");
-            }
-        }
-
-
-        // Carrega todos os recebimentos do Firebase
-        async function carregarPagamentos() {
-            try {
-                // Consulta ordenada por dataPagamento (crescente)
-                const q = query(collection(db, "recebimentos"), orderBy("dataPagamento"));
-                const querySnapshot = await getDocs(q);
-                payments = []; // Limpa a lista atual de pagamentos
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-
-                    // Validação básica da data
-                    if (!data.dataPagamento || typeof data.dataPagamento !== 'string') {
-                        console.warn("Recebimento com data inválida/ausente:", doc.id, data.dataPagamento);
-                        return; // Ignora recebimentos sem data válida
-                    }
-
-                     // Adiciona recebimento à lista global
-                    payments.push({
-                        id: doc.id,
-                        descricao: data.descricao || "Sem Descrição",
-                        valor: data.valor || 0,
-                        dataPagamento: data.dataPagamento, // Assume que já está em YYYY-MM-DD do Firebase
-                        clienteId: data.clienteId || null,
-                        clienteNome: data.clienteNome || null, // Pode ser null se não selecionado ou cliente excluído
-                        telefone: data.telefone || null, // Pode ser null
-                        pago: data.pago || false // Assume false se não definido
-                    });
-                });
-
-                atualizarCalendario(); // Atualiza o calendário e resumo com os dados carregados
-            } catch (error) {
-                console.error("Erro ao carregar recebimentos:", error);
-                alert("Erro ao carregar recebimentos. Verifique o console para detalhes.");
-            }
-        }
-
-
-        // Adiciona novo pagamento ao Firebase
-        async function adicionarPagamento() {
-            const descricao = document.getElementById('descricao').value;
-            const valor = parseFloat(document.getElementById('valor').value);
-            const dataInput = document.getElementById('data-pagamento').value;
-            const dataCorrigida = ajustarDataParaFirestore(dataInput); // Garante formato YYYY-MM-DD
-            const clienteSelect = document.getElementById('cliente');
-            const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
-
-            // Validações
-            if (!descricao || !descricao.trim()) {
-                alert("Informe uma descrição válida!");
-                return;
-            }
-
-            if (isNaN(valor) || valor <= 0) {
-                alert("Informe um valor válido maior que zero!");
-                return;
-            }
-
-            if (!dataCorrigida) {
-                alert("Data de vencimento inválida!");
-                return;
-            }
-
-            try {
-                // Adiciona o novo documento na coleção 'recebimentos'
-                await addDoc(collection(db, "recebimentos"), {
-                    descricao: descricao.trim(),
-                    valor: valor, // Salva como número
-                    dataPagamento: dataCorrigida, // Salva no formato YYYY-MM-DD
-                    clienteId: clienteSelecionado?.id || null,
-                    clienteNome: clienteSelecionado?.nome || null, // Salva o nome do cliente selecionado
-                    telefone: clienteSelecionado?.telefone || null, // Salva o telefone do cliente selecionado
-                    pago: false, // Novos recebimentos começam como pendentes
-                    createdAt: new Date() // Adiciona timestamp de criação
-                });
-
-                modal.style.display = 'none'; // Esconde o modal
-                paymentForm.reset(); // Reseta o formulário
-                document.getElementById('cliente').value = ''; // Limpa a seleção do cliente no formulário
-                await carregarPagamentos(); // Recarrega todos os dados e atualiza a UI
-                alert(`Recebimento adicionado para ${formatarDataExibicao(dataCorrigida)} com sucesso!`);
-            } catch (error) {
-                console.error("Erro ao adicionar recebimento:", error);
-                alert("Erro ao adicionar recebimento");
-            }
-        }
-
-
-        // Atualiza calendário visualmente
-        function atualizarCalendario() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-
-            currentMonthElement.textContent = `${getMonthName(month)} de ${year}`; // Atualiza o header do calendário
-
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-
-            const startDay = firstDay.getDay(); // Dia da semana do primeiro dia (0=Dom)
-            const totalDays = lastDay.getDate(); // Total de dias no mês
-
-            calendarDays.innerHTML = ''; // Limpa a grade atual
-
-            // Preenche dias vazios no início do mês
-            for (let i = 0; i < startDay; i++) {
-                calendarDays.appendChild(criarDiaVazio());
-            }
-
-            // Preenche os dias do mês
-            const today = new Date();
-            today.setHours(0, 0, 0, 0); // Zera horas para comparação correta
-
-            for (let day = 1; day <= totalDays; day++) {
-                const date = new Date(year, month, day);
-                 // Cria string da data no formato YYYY-MM-DD para comparação
-                const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-
-                 // Filtra pagamentos apenas para este dia específico
-                const dayPayments = payments.filter(p => {
-                    return p.dataPagamento === dateString;
-                });
-
-                const dayElement = document.createElement('div');
-                dayElement.className = 'day-cell';
-
-                // Adiciona classe 'today' se for o dia atual
-                if (date.toDateString() === today.toDateString()) {
-                    dayElement.classList.add('today');
-                }
-
-                // Verifica status dos pagamentos para aplicar classes CSS
-                const hasPastDue = dayPayments.some(p => !p.pago && new Date(p.dataPagamento + 'T00:00:00') < today); // Compara como datas
-                const allPaid = dayPayments.length > 0 && dayPayments.every(p => p.pago);
-
-                if (hasPastDue) {
-                    dayElement.classList.add('past-unpaid');
-                } else if (allPaid) {
-                    dayElement.classList.add('all-paid');
-                }
-
-                 // Adiciona o número do dia
-                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
-
-                // Adiciona contagem de recebimentos se houver
-                if (dayPayments.length > 0) {
-                    const paymentCount = document.createElement('div');
-                    paymentCount.className = 'payment-count';
-                    paymentCount.textContent = `${dayPayments.length} rec.`;
-                    dayElement.appendChild(paymentCount);
-                }
-
-                // Adiciona evento de clique para mostrar detalhes do dia
-                dayElement.addEventListener('click', () => {
-                    mostrarDetalhesDia(date, dayPayments); // Passa a data e os pagamentos do dia
-                });
-
-                calendarDays.appendChild(dayElement); // Adiciona a célula do dia ao grid
-            }
-
-            // Preenche dias vazios no final para completar a última semana
-            const daysInGrid = calendarDays.children.length;
-            const remainingCells = daysInGrid % 7 === 0 ? 0 : 7 - (daysInGrid % 7);
-
-             for (let i = 0; i < remainingCells; i++) {
-                calendarDays.appendChild(criarDiaVazio());
-            }
-
-             atualizarResumo(); // Atualiza o resumo do mês após o calendário ser renderizado
-        }
-
-
-        // Cria um elemento div para um dia vazio no calendário
-        function criarDiaVazio() {
-            const emptyDay = document.createElement('div');
-            emptyDay.className = 'day-cell';
-            emptyDay.style.visibility = 'hidden'; // Torna invisível
-            emptyDay.style.pointerEvents = 'none'; // Desabilita eventos de mouse
-            return emptyDay;
-        }
-
-        // Mostra detalhes de todos os recebimentos de um dia específico em um modal
-        function mostrarDetalhesDia(date, dayPayments) {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            // Formata a data para exibir no título do modal
-            dayDetailsTitle.textContent = `Detalhes para ${date.toLocaleDateString('pt-BR', options)}`;
-            dayPaymentsList.innerHTML = ''; // Limpa a lista de detalhes anterior
-
-            if (dayPayments.length === 0) {
-                dayPaymentsList.innerHTML = '<p style="text-align: center; color: #64748b;">Nenhum recebimento para este dia.</p>';
-            } else {
-                // Ordena os pagamentos do dia: atrasados primeiro, depois pendentes, depois pagos
-                dayPayments.sort((a, b) => {
-                    const aDate = new Date(a.dataPagamento + 'T00:00:00');
-                    const bDate = new Date(b.dataPagamento + 'T00:00:00');
-                    const today = new Date();
-                    today.setHours(0,0,0,0);
-
-                    // Define um valor numérico para cada status para facilitar a ordenação
-                    // 0: Atrasado, 1: Pendente, 2: Pago
-                    const aStatus = a.pago ? 2 : aDate < today ? 0 : 1;
-                    const bStatus = b.pago ? 2 : bDate < today ? 0 : 1;
-
-                    if (aStatus !== bStatus) {
-                        return aStatus - bStatus; // Ordena por status
-                    } else {
-                        // Dentro do mesmo status, ordena por data de vencimento (se houver)
-                        return aDate.getTime() - bDate.getTime();
-                    }
-                });
-
-
-                dayPayments.forEach(payment => {
-                    const paymentDate = new Date(payment.dataPagamento + 'T00:00:00'); // Compara como datas
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    const isPastDue = !payment.pago && paymentDate < today;
-
-                    const paymentElement = document.createElement('div');
-                    // Adiciona classes para estilização baseada no status (pago, past-due)
-                    paymentElement.className = `day-payment ${payment.pago ? 'paid' : isPastDue ? 'past-due' : ''}`;
-
-                    paymentElement.innerHTML = `
-                        <h3>${payment.descricao}</h3>
-                        <p><strong>Valor:</strong> ${formatarValorBRL(payment.valor)}</p>
-                        ${payment.clienteNome ? `<p><strong>Cliente:</strong> ${payment.clienteNome}</p>` : ''}
-                        <p><strong>Status:</strong> ${payment.pago ? 'Pago' : isPastDue ? 'Atrasado' : 'Pendente'}</p>
-                        <p><strong>Vencimento:</strong> ${formatarDataExibicao(payment.dataPagamento)}</p>
-
-                        <div class="payment-actions">
-                            ${!payment.pago ? `
-                                <button class="btn-pago" onclick="marcarComoPago('${payment.id}')">
-                                    <i class="fas fa-check-circle"></i> Pago
-                                </button>
-                                <button class="btn-editar" onclick="editarPagamento('${payment.id}')">
-                                    <i class="fas fa-edit"></i> Editar
-                                </button>
-                                <button class="btn-excluir" onclick="excluirPagamento('${payment.id}')">
-                                    <i class="fas fa-trash-alt"></i> Excluir
-                                </button>
-                                ${payment.telefone ? `
-                                    <button class="btn-whatsapp" onclick="cobrarViaWhatsapp(${JSON.stringify(payment).replace(/"/g, '&quot;')})">
-                                        <i class="fab fa-whatsapp"></i> WhatsApp
-                                    </button>
-                                ` : ''}
-                            ` : `
-                                 <button class="btn-excluir" onclick="excluirPagamento('${payment.id}')">
-                                     <i class="fas fa-trash-alt"></i> Excluir
-                                 </button>
-                             `}
-                        </div>
-                    `;
-
-                    dayPaymentsList.appendChild(paymentElement); // Adiciona o detalhe do pagamento à lista
-                });
-            }
-
-            dayDetailsModal.style.display = 'flex'; // Exibe o modal de detalhes do dia
-        }
-
-
-        // Implementação da função para gerar e exibir o demonstrativo mensal
-        function gerarDemonstrativo() {
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth(); // 0-indexed
-
-            // Atualiza o título do modal do demonstrativo
-            demonstrativoTitle.textContent = `Demonstrativo de ${getMonthName(month)} de ${year}`;
-            demonstrativoList.innerHTML = ''; // Limpa a lista do demonstrativo anterior
-
-            // Filtra pagamentos para o mês atual (reutiliza lógica de atualizarResumo)
-            const paymentsThisMonth = payments.filter(payment => {
-                if (!payment.dataPagamento) {
-                    return false;
-                }
-                const [ano, mes, dia] = payment.dataPagamento.split('-');
-                return parseInt(ano) === year && (parseInt(mes) - 1) === month;
-            });
-
-            if (paymentsThisMonth.length === 0) {
-                demonstrativoList.innerHTML = '<p style="text-align: center; color: #64748b;">Nenhum recebimento neste mês para gerar o demonstrativo.</p>';
-            } else {
-                 // Objeto para agrupar totais por cliente
-                const summaryByClient = {};
-
-                paymentsThisMonth.forEach(payment => {
-                     // Usa o ID do cliente ou 'sem_cliente' se não houver ID
-                    const clientId = payment.clienteId || 'sem_cliente';
-                    const clientName = payment.clienteNome || 'Sem Cliente'; // Usa nome ou 'Sem Cliente'
-
-                    // Inicializa o cliente no summaryByClient se não existir
-                    if (!summaryByClient[clientId]) {
-                        summaryByClient[clientId] = {
-                            name: clientName,
-                            paid: 0,
-                            pending: 0,
-                            total: 0 // Adiciona total geral por cliente
-                        };
-                    }
-
-                    // Soma os valores
-                    summaryByClient[clientId].total += payment.valor;
-                    if (payment.pago) {
-                        summaryByClient[clientId].paid += payment.valor;
-                    } else {
-                        summaryByClient[clientId].pending += payment.valor;
-                    }
-                });
-
-                // Converte o objeto summaryByClient para um array para facilitar a exibição
-                 const clientsSummaryArray = Object.values(summaryByClient);
-
-                 // Opcional: Ordenar os clientes pelo nome ou total
-                 clientsSummaryArray.sort((a, b) => a.name.localeCompare(b.name)); // Ordena por nome
-
-
-                // Gera o HTML para exibir o resumo por cliente
-                clientsSummaryArray.forEach(clientSummary => {
-                    const clientSummaryElement = document.createElement('div');
-                    clientSummaryElement.className = 'demonstrativo-client-summary';
-
-                    clientSummaryElement.innerHTML = `
-                        <h3>${clientSummary.name}</h3>
-                        <p><strong>Total do Cliente:</strong> ${formatarValorBRL(clientSummary.total)}</p>
-                        <p class="paid-total"><strong>Total Pago:</strong> ${formatarValorBRL(clientSummary.paid)}</p>
-                        <p class="pending-total"><strong>Total Pendente:</strong> ${formatarValorBRL(clientSummary.pending)}</p>
-                    `;
-                    demonstrativoList.appendChild(clientSummaryElement);
-                });
-            }
-
-            // Exibe o modal do demonstrativo
-            demonstrativoModal.style.display = 'flex';
-        }
-
-
-        // Atualiza o resumo financeiro na parte superior (SOMENTE para o mês atual)
-        function atualizarResumo() {
-            let totalPendenteMes = 0;
-            let totalRecebidoMes = 0;
-
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth(); // Month is 0-indexed
-
-            // Filtra pagamentos para incluir APENAS os do mês atual
-            const paymentsThisMonth = payments.filter(payment => {
-                // Garante que dataPagamento existe e é uma string antes de tentar dividir
-                if (!payment.dataPagamento || typeof payment.dataPagamento !== 'string') {
-                    return false;
-                }
-                const [ano, mes, dia] = payment.dataPagamento.split('-');
-                // Note: parseInt(mes) é 1-indexed, por isso subtraímos 1 para comparar com month (0-indexed)
-                return parseInt(ano) === year && (parseInt(mes) - 1) === month;
-            });
-
-            paymentsThisMonth.forEach(payment => {
-                if (payment.pago) {
-                    totalRecebidoMes += payment.valor;
-                } else {
-                    totalPendenteMes += payment.valor;
-                }
-            });
-
-             // Formata e exibe os totais
-            totalPendenteElement.textContent = formatarValorBRL(totalPendenteMes);
-            totalRecebidoElement.textContent = formatarValorBRL(totalRecebidoMes);
-        }
-
-
-        // Retorna nome do mês em português
-        function getMonthName(month) {
-            const months = [
-                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-            ];
-            return months[month];
-        }
 
     </script>
 </body>
