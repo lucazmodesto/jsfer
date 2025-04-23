@@ -175,7 +175,7 @@
             background: #497FB5;
         }
 
-        /* Modal de adicionar recebimento */
+        /* Estilos gerais de modal */
         .modal {
             display: none;
             position: fixed;
@@ -187,6 +187,7 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            overflow-y: auto; /* Permite scroll se o conteúdo for grande */
         }
 
         .modal-content {
@@ -196,6 +197,8 @@
             width: 90%;
             max-width: 400px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+             max-height: 90vh; /* Limita altura do modal */
+             overflow-y: auto; /* Adiciona scroll ao conteúdo do modal */
         }
 
         .modal h2 {
@@ -267,16 +270,18 @@
 
         /* Modal de detalhes do dia */
         .day-details-modal {
-            display: none;
-            position: fixed;
+             /* Reusa estilos base do .modal */
+            position: fixed; /* Mudar para fixed para sobrepor outros modais se necessário */
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
+            background: rgba(0,0,0,0.7); /* Fundo mais escuro */
+            z-index: 2000; /* Z-index maior para sobrepor o modal de adição */
             justify-content: center;
             align-items: center;
+            display: none; /* Começa escondido */
+            overflow-y: auto;
         }
 
         .day-details-content {
@@ -354,6 +359,7 @@
             display: flex;
             gap: 8px;
             margin-top: 12px;
+            flex-wrap: wrap; /* Permite que os botões quebrem linha em telas pequenas */
         }
 
         .payment-actions button {
@@ -367,6 +373,7 @@
             align-items: center;
             justify-content: center;
             flex: 1;
+            min-width: fit-content; /* Evita que os botões fiquem muito espremidos */
         }
 
         .btn-pago {
@@ -410,6 +417,75 @@
             margin-right: 5px;
             font-size: 0.9em;
         }
+
+         /* Estilos para o Modal do Demonstrativo */
+        .demonstrativo-modal .modal-content {
+            max-width: 600px; /* Um pouco mais largo para a tabela/lista */
+        }
+
+        .demonstrativo-modal h2 {
+            margin-bottom: 20px;
+        }
+
+        .demonstrativo-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .demonstrativo-client-summary {
+            background: #f8fafc;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .demonstrativo-client-summary h3 {
+            margin: 0 0 8px 0;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .demonstrativo-client-summary p {
+            margin: 4px 0;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        .demonstrativo-client-summary p strong {
+            color: #334155;
+        }
+
+        .demonstrativo-client-summary .paid-total {
+            color: #149014; /* Verde para pago */
+            font-weight: bold;
+        }
+
+        .demonstrativo-client-summary .pending-total {
+            color: #d3950e; /* Laranja/Amarelo para pendente */
+            font-weight: bold;
+        }
+
+         .close-modal-btn {
+            background: #64748b; /* Cor de cinza para fechar */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: block; /* Ocupa a linha toda se necessário */
+            width: 100%;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+
+        .close-modal-btn:hover {
+            background: #475569;
+        }
+
 
         /* Responsividade para mobile */
         @media (max-width: 480px) {
@@ -509,33 +585,45 @@
             .payment-actions button {
                 width: 100%;
                 padding: 10px;
+                min-width: auto; /* Remove min-width em mobile para flexionar melhor */
             }
+
+             .demonstrativo-modal .modal-content {
+                max-width: 95%; /* Usa mais largura em mobile */
+             }
+
+             .demonstrativo-client-summary h3 {
+                font-size: 1rem;
+             }
+
+             .demonstrativo-client-summary p {
+                 font-size: 0.9rem;
+             }
         }
     </style>
-    <!-- Adicionando Font Awesome para ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <h1>Calendário Financeiro</h1>
-        
+
         <div class="resumo">
             <div>
                 <span id="total-pendente">R$ 0,00</span>
-                <span>A Receber</span>
+                <span>A Receber (Mês)</span>
             </div>
             <div>
                 <span id="total-recebido">R$ 0,00</span>
-                <span>Recebido</span>
+                <span>Recebido (Mês)</span>
             </div>
         </div>
-        
+
         <div class="calendar-controls">
             <button id="prev-month">&lt;</button>
             <div class="month-year" id="current-month">Mês 2023</div>
             <button id="next-month">&gt;</button>
         </div>
-        
+
         <div class="calendar-grid" id="calendar-header">
             <div class="day-header">Dom</div>
             <div class="day-header">Seg</div>
@@ -545,34 +633,33 @@
             <div class="day-header">Sex</div>
             <div class="day-header">Sáb</div>
         </div>
-        
+
         <div class="calendar-grid" id="calendar-days"></div>
-        
+
         <button class="add-payment" id="open-modal">+ Adicionar Recebimento</button>
         <button id="btn-demonstrativo" style="margin-top:10px; background:#1e293b; color:white; padding:10px 15px; border:none; border-radius:8px; font-weight:600; cursor:pointer; width:100%;">
             📊 Gerar Demonstrativo do Mês
         </button>
     </div>
-    
-    <!-- Modal para adicionar recebimento -->
+
     <div class="modal" id="payment-modal">
         <div class="modal-content">
             <h2>Novo Recebimento</h2>
             <form id="payment-form">
                 <label for="descricao">Descrição</label>
                 <input type="text" id="descricao" required>
-                
+
                 <label for="valor">Valor (R$)</label>
                 <input type="number" id="valor" step="0.01" required>
-                
+
                 <label for="data-pagamento">Data de Vencimento</label>
                 <input type="date" id="data-pagamento" required>
-                
+
                 <label for="cliente">Cliente (opcional)</label>
                 <select id="cliente">
                     <option value="">Selecione...</option>
                 </select>
-                
+
                 <div class="modal-buttons">
                     <button type="button" class="cancel-btn" id="cancel-payment">Cancelar</button>
                     <button type="submit" class="save-btn">Salvar</button>
@@ -580,8 +667,7 @@
             </form>
         </div>
     </div>
-    
-    <!-- Modal para detalhes do dia -->
+
     <div class="day-details-modal" id="day-details-modal">
         <div class="day-details-content">
             <div class="day-details-header">
@@ -591,6 +677,18 @@
             <div id="day-payments-list"></div>
         </div>
     </div>
+
+     <div class="modal demonstrativo-modal" id="demonstrativo-modal">
+        <div class="modal-content">
+            <div class="day-details-header"> <h2 id="demonstrativo-title">Demonstrativo Mensal</h2>
+                <button id="close-demonstrativo">X</button>
+            </div>
+            <div id="demonstrativo-list">
+                </div>
+             <button class="close-modal-btn" id="close-demonstrativo-btn-bottom">Fechar</button>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
@@ -612,67 +710,106 @@
         // Variáveis globais
         let currentDate = new Date();
         let payments = [];
-        let clients = [];
+        let clients = []; // Mantém a lista de clientes para referência
 
         // Elementos DOM
         const calendarDays = document.getElementById('calendar-days');
         const currentMonthElement = document.getElementById('current-month');
         const prevMonthBtn = document.getElementById('prev-month');
         const nextMonthBtn = document.getElementById('next-month');
-        const modal = document.getElementById('payment-modal');
+        const modal = document.getElementById('payment-modal'); // Modal adicionar/editar
         const openModalBtn = document.getElementById('open-modal');
         const cancelModalBtn = document.getElementById('cancel-payment');
         const paymentForm = document.getElementById('payment-form');
         const totalPendenteElement = document.getElementById('total-pendente');
         const totalRecebidoElement = document.getElementById('total-recebido');
-        const dayDetailsModal = document.getElementById('day-details-modal');
+        const dayDetailsModal = document.getElementById('day-details-modal'); // Modal detalhes do dia
         const dayDetailsTitle = document.getElementById('day-details-title');
         const dayPaymentsList = document.getElementById('day-payments-list');
         const closeDayDetailsBtn = document.getElementById('close-day-details');
+        const btnDemonstrativo = document.getElementById('btn-demonstrativo'); // Botão demonstrativo
+        const demonstrativoModal = document.getElementById('demonstrativo-modal'); // Novo modal demonstrativo
+        const demonstrativoTitle = document.getElementById('demonstrativo-title');
+        const demonstrativoList = document.getElementById('demonstrativo-list');
+        const closeDemonstrativoBtn = document.getElementById('close-demonstrativo'); // Botão fechar no header
+        const closeDemonstrativoBtnBottom = document.getElementById('close-demonstrativo-btn-bottom'); // Botão fechar no final
 
-        // Função para corrigir o problema de data
+        // Função para corrigir o problema de data (garante formato 'YYYY-MM-DD')
+        // Essencial para consistência com o Firebase e comparações
         function ajustarDataParaFirestore(dataString) {
             if (!dataString) return null;
-            return dataString;
+            // Se a data já estiver no formato YYYY-MM-DD, retorna direto
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dataString)) {
+                return dataString;
+            }
+            // Tenta converter de outros formatos comuns (pode precisar de mais lógica para cobrir todos os casos)
+            try {
+                const date = new Date(dataString + 'T00:00:00'); // Adiciona T00:00:00 para evitar problemas de fuso horário
+                if (!isNaN(date.getTime())) {
+                    const year = date.getFullYear();
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const day = date.getDate().toString().padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+            } catch (e) {
+                console.error("Erro ao ajustar data:", dataString, e);
+            }
+            return null; // Retorna null se a data for inválida
         }
 
-        // Função para exibir data formatada
+
+        // Função para exibir data formatada (DD/MM/YYYY)
         function formatarDataExibicao(dataString) {
             if (!dataString) return '';
+             // Assume que a data string é YYYY-MM-DD
             const [ano, mes, dia] = dataString.split('-');
             return `${dia}/${mes}/${ano}`;
         }
 
+         // Função para formatar valores monetários em BRL
+         function formatarValorBRL(valor) {
+             if (isNaN(valor)) return 'R$ 0,00';
+             return `R$ ${valor.toFixed(2).replace('.', ',')}`;
+         }
+
+
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
-            carregarClientes();
-            carregarPagamentos();
-            
+            carregarClientes(); // Carrega clientes primeiro
+            carregarPagamentos(); // Depois carrega pagamentos
+
+            // Listeners para navegação do calendário
             prevMonthBtn.addEventListener('click', () => {
                 currentDate.setMonth(currentDate.getMonth() - 1);
                 atualizarCalendario();
+                // atualizarResumo() é chamado dentro de atualizarCalendario() agora
             });
-            
+
             nextMonthBtn.addEventListener('click', () => {
                 currentDate.setMonth(currentDate.getMonth() + 1);
                 atualizarCalendario();
+                 // atualizarResumo() é chamado dentro de atualizarCalendario() agora
             });
-            
+
+            // Listener para abrir modal de adicionar
             openModalBtn.addEventListener('click', () => {
                 modal.style.display = 'flex';
-                // Define a data atual como padrão
+                // Define a data atual como padrão no formato YYYY-MM-DD
                 const hoje = new Date();
                 const dataFormatada = hoje.toISOString().substring(0, 10);
                 document.getElementById('data-pagamento').value = dataFormatada;
             });
-            
+
+            // Listener para cancelar modal de adicionar/editar
             cancelModalBtn.addEventListener('click', () => {
                 modal.style.display = 'none';
                 paymentForm.reset();
-                paymentForm.removeAttribute('data-editar-id');
-                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento';
+                paymentForm.removeAttribute('data-editar-id'); // Limpa ID de edição
+                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento'; // Restaura título
+                 document.getElementById('cliente').value = ''; // Limpa a seleção do cliente
             });
-            
+
+            // Listener para submit do formulário (adicionar ou editar)
             paymentForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const editingId = paymentForm.getAttribute('data-editar-id');
@@ -682,34 +819,54 @@
                     await adicionarPagamento();
                 }
             });
-            
+
+            // Listener para fechar modal de detalhes do dia
             closeDayDetailsBtn.addEventListener('click', () => {
                 dayDetailsModal.style.display = 'none';
             });
-        });
+
+            // Listener para o botão Gerar Demonstrativo
+            btnDemonstrativo.addEventListener('click', () => {
+                gerarDemonstrativo(); // Chama a nova função para gerar e exibir o demonstrativo
+            });
+
+             // Listeners para fechar o modal do Demonstrativo
+            closeDemonstrativoBtn.addEventListener('click', () => {
+                demonstrativoModal.style.display = 'none';
+            });
+
+            closeDemonstrativoBtnBottom.addEventListener('click', () => {
+                demonstrativoModal.style.display = 'none';
+            });
+
+        }); // Fim do DOMContentLoaded
+
 
         // Carrega clientes do Firebase
         async function carregarClientes() {
             try {
                 const querySnapshot = await getDocs(collection(db, "clientes"));
-                clients = [];
+                clients = []; // Limpa a lista atual de clientes
                 const clienteSelect = document.getElementById('cliente');
-                clienteSelect.innerHTML = '<option value="">Selecione...</option>';
-                
+                clienteSelect.innerHTML = '<option value="">Selecione...</option>'; // Opção padrão
+
                 querySnapshot.forEach((doc) => {
                     const client = doc.data();
+                     // Adiciona cliente à lista global para referência
                     clients.push({
                         id: doc.id,
                         ...client
                     });
-                    
+
+                    // Cria uma opção para cada cliente no select do modal de pagamento
                     const option = document.createElement('option');
-                    option.value = JSON.stringify({ 
-                        id: doc.id, 
-                        nome: client.empresa, 
-                        telefone: client.telefone 
+                     // Armazena ID, nome da empresa e telefone na value como string JSON
+                    option.value = JSON.stringify({
+                        id: doc.id,
+                        nome: client.empresa || client.nome || 'Cliente Desconhecido', // Tenta empresa ou nome
+                        telefone: client.telefone || '' // Adiciona telefone (tratado como string)
                     });
-                    option.textContent = `${client.empresa} - ${client.comprador}`;
+                    option.textContent = `${client.empresa || client.nome || 'Cliente Desconhecido'} ${client.comprador ? ' - ' + client.comprador : ''}`;
                     clienteSelect.appendChild(option);
                 });
             } catch (error) {
@@ -718,83 +875,87 @@
             }
         }
 
+
+        // Carrega todos os recebimentos do Firebase
         async function carregarPagamentos() {
             try {
-                // Consulta ordenada por dataPagamento
+                // Consulta ordenada por dataPagamento (crescente)
                 const q = query(collection(db, "recebimentos"), orderBy("dataPagamento"));
                 const querySnapshot = await getDocs(q);
-                payments = [];
-                
+                payments = []; // Limpa a lista atual de pagamentos
+
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    
-                    // Garante que a dataPagamento existe e está no formato correto
-                    if (!data.dataPagamento) {
-                        console.warn("Recebimento sem data:", doc.id);
-                        return;
+
+                    // Validação básica da data
+                    if (!data.dataPagamento || typeof data.dataPagamento !== 'string') {
+                        console.warn("Recebimento com data inválida/ausente:", doc.id, data.dataPagamento);
+                        return; // Ignora recebimentos sem data válida
                     }
-                    
+
+                     // Adiciona recebimento à lista global
                     payments.push({
                         id: doc.id,
-                        descricao: data.descricao || "",
+                        descricao: data.descricao || "Sem Descrição",
                         valor: data.valor || 0,
-                        dataPagamento: data.dataPagamento,
+                        dataPagamento: data.dataPagamento, // Assume que já está em YYYY-MM-DD do Firebase
                         clienteId: data.clienteId || null,
-                        clienteNome: data.clienteNome || null,
-                        telefone: data.telefone || null,
-                        pago: data.pago || false
+                        clienteNome: data.clienteNome || null, // Pode ser null se não selecionado ou cliente excluído
+                        telefone: data.telefone || null, // Pode ser null
+                        pago: data.pago || false // Assume false se não definido
                     });
                 });
-                
-                atualizarCalendario();
-                atualizarResumo();
+
+                atualizarCalendario(); // Atualiza o calendário e resumo com os dados carregados
             } catch (error) {
                 console.error("Erro ao carregar recebimentos:", error);
                 alert("Erro ao carregar recebimentos. Verifique o console para detalhes.");
             }
         }
 
-        // Adiciona novo pagamento
+
+        // Adiciona novo pagamento ao Firebase
         async function adicionarPagamento() {
             const descricao = document.getElementById('descricao').value;
             const valor = parseFloat(document.getElementById('valor').value);
             const dataInput = document.getElementById('data-pagamento').value;
-            const dataCorrigida = ajustarDataParaFirestore(dataInput);
+            const dataCorrigida = ajustarDataParaFirestore(dataInput); // Garante formato YYYY-MM-DD
             const clienteSelect = document.getElementById('cliente');
             const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
-            
+
             // Validações
             if (!descricao || !descricao.trim()) {
                 alert("Informe uma descrição válida!");
                 return;
             }
-            
+
             if (isNaN(valor) || valor <= 0) {
-                alert("Informe um valor válido!");
+                alert("Informe um valor válido maior que zero!");
                 return;
             }
-            
+
             if (!dataCorrigida) {
-                alert("Data inválida!");
+                alert("Data de vencimento inválida!");
                 return;
             }
-            
+
             try {
+                // Adiciona o novo documento na coleção 'recebimentos'
                 await addDoc(collection(db, "recebimentos"), {
                     descricao: descricao.trim(),
-                    valor,
-                    dataPagamento: dataCorrigida,
+                    valor: valor, // Salva como número
+                    dataPagamento: dataCorrigida, // Salva no formato YYYY-MM-DD
                     clienteId: clienteSelecionado?.id || null,
-                    clienteNome: clienteSelecionado?.nome || null,
-                    telefone: clienteSelecionado?.telefone || null,
-                    pago: false,
-                    createdAt: new Date()
+                    clienteNome: clienteSelecionado?.nome || null, // Salva o nome do cliente selecionado
+                    telefone: clienteSelecionado?.telefone || null, // Salva o telefone do cliente selecionado
+                    pago: false, // Novos recebimentos começam como pendentes
+                    createdAt: new Date() // Adiciona timestamp de criação
                 });
-                
-                modal.style.display = 'none';
-                paymentForm.reset();
-                await carregarPagamentos();
-                
+
+                modal.style.display = 'none'; // Esconde o modal
+                paymentForm.reset(); // Reseta o formulário
+                document.getElementById('cliente').value = ''; // Limpa a seleção do cliente no formulário
+                await carregarPagamentos(); // Recarrega todos os dados e atualiza a UI
                 alert(`Recebimento adicionado para ${formatarDataExibicao(dataCorrigida)} com sucesso!`);
             } catch (error) {
                 console.error("Erro ao adicionar recebimento:", error);
@@ -802,123 +963,147 @@
             }
         }
 
-        // Atualiza calendário
+
+        // Atualiza calendário visualmente
         function atualizarCalendario() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-            
-            currentMonthElement.textContent = `${getMonthName(month)} ${year}`;
-            
+
+            currentMonthElement.textContent = `${getMonthName(month)} de ${year}`; // Atualiza o header do calendário
+
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-            
-            const startDay = firstDay.getDay();
-            const totalDays = lastDay.getDate();
-            
-            calendarDays.innerHTML = '';
-            
-            // Dias vazios no início
+
+            const startDay = firstDay.getDay(); // Dia da semana do primeiro dia (0=Dom)
+            const totalDays = lastDay.getDate(); // Total de dias no mês
+
+            calendarDays.innerHTML = ''; // Limpa a grade atual
+
+            // Preenche dias vazios no início do mês
             for (let i = 0; i < startDay; i++) {
                 calendarDays.appendChild(criarDiaVazio());
             }
-            
-            // Dias do mês
+
+            // Preenche os dias do mês
             const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
+            today.setHours(0, 0, 0, 0); // Zera horas para comparação correta
+
             for (let day = 1; day <= totalDays; day++) {
                 const date = new Date(year, month, day);
+                 // Cria string da data no formato YYYY-MM-DD para comparação
+                const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+
+                 // Filtra pagamentos apenas para este dia específico
                 const dayPayments = payments.filter(p => {
-                    // Extrai dia, mês e ano diretamente da string (evita problemas de fuso horário)
-                    const [ano, mes, dia] = p.dataPagamento.split('-');
-                    return parseInt(dia) === day && 
-                           parseInt(mes) === month + 1 && 
-                           parseInt(ano) === year;
+                    return p.dataPagamento === dateString;
                 });
-                
+
                 const dayElement = document.createElement('div');
                 dayElement.className = 'day-cell';
-                
-                // Verifica se é hoje
+
+                // Adiciona classe 'today' se for o dia atual
                 if (date.toDateString() === today.toDateString()) {
                     dayElement.classList.add('today');
                 }
-                
-                // Verifica status dos pagamentos
-                const hasPastDue = dayPayments.some(p => !p.pago && new Date(p.dataPagamento) < today);
+
+                // Verifica status dos pagamentos para aplicar classes CSS
+                const hasPastDue = dayPayments.some(p => !p.pago && new Date(p.dataPagamento + 'T00:00:00') < today); // Compara como datas
                 const allPaid = dayPayments.length > 0 && dayPayments.every(p => p.pago);
-                
+
                 if (hasPastDue) {
                     dayElement.classList.add('past-unpaid');
                 } else if (allPaid) {
                     dayElement.classList.add('all-paid');
                 }
-                
+
+                 // Adiciona o número do dia
                 dayElement.innerHTML = `<div class="day-number">${day}</div>`;
-                
+
+                // Adiciona contagem de recebimentos se houver
                 if (dayPayments.length > 0) {
                     const paymentCount = document.createElement('div');
                     paymentCount.className = 'payment-count';
                     paymentCount.textContent = `${dayPayments.length} rec.`;
                     dayElement.appendChild(paymentCount);
                 }
-                
+
+                // Adiciona evento de clique para mostrar detalhes do dia
                 dayElement.addEventListener('click', () => {
-                    mostrarDetalhesDia(date, dayPayments);
+                    mostrarDetalhesDia(date, dayPayments); // Passa a data e os pagamentos do dia
                 });
-                
-                calendarDays.appendChild(dayElement);
+
+                calendarDays.appendChild(dayElement); // Adiciona a célula do dia ao grid
             }
-            
-            // Dias vazios no final
-            const daysShown = startDay + totalDays;
-            const remainingCells = daysShown % 7 === 0 ? 0 : 7 - (daysShown % 7);
-            
-            for (let i = 0; i < remainingCells; i++) {
+
+            // Preenche dias vazios no final para completar a última semana
+            const daysInGrid = calendarDays.children.length;
+            const remainingCells = daysInGrid % 7 === 0 ? 0 : 7 - (daysInGrid % 7);
+
+             for (let i = 0; i < remainingCells; i++) {
                 calendarDays.appendChild(criarDiaVazio());
             }
+
+             atualizarResumo(); // Atualiza o resumo do mês após o calendário ser renderizado
         }
 
-        // Cria dia vazio
+
+        // Cria um elemento div para um dia vazio no calendário
         function criarDiaVazio() {
             const emptyDay = document.createElement('div');
             emptyDay.className = 'day-cell';
-            emptyDay.style.visibility = 'hidden';
+            emptyDay.style.visibility = 'hidden'; // Torna invisível
+            emptyDay.style.pointerEvents = 'none'; // Desabilita eventos de mouse
             return emptyDay;
         }
 
-        // Mostra detalhes do dia
+        // Mostra detalhes de todos os recebimentos de um dia específico em um modal
         function mostrarDetalhesDia(date, dayPayments) {
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            dayDetailsTitle.textContent = date.toLocaleDateString('pt-BR', options);
-            dayPaymentsList.innerHTML = '';
-            
+            // Formata a data para exibir no título do modal
+            dayDetailsTitle.textContent = `Detalhes para ${date.toLocaleDateString('pt-BR', options)}`;
+            dayPaymentsList.innerHTML = ''; // Limpa a lista de detalhes anterior
+
             if (dayPayments.length === 0) {
                 dayPaymentsList.innerHTML = '<p style="text-align: center; color: #64748b;">Nenhum recebimento para este dia.</p>';
             } else {
-                // Ordena: atrasados primeiro, depois pendentes, depois pagos
+                // Ordena os pagamentos do dia: atrasados primeiro, depois pendentes, depois pagos
                 dayPayments.sort((a, b) => {
-                    const aDate = new Date(a.dataPagamento);
-                    const bDate = new Date(b.dataPagamento);
-                    const aStatus = a.pago ? 2 : aDate < new Date() ? 0 : 1;
-                    const bStatus = b.pago ? 2 : bDate < new Date() ? 0 : 1;
-                    return aStatus - bStatus;
+                    const aDate = new Date(a.dataPagamento + 'T00:00:00');
+                    const bDate = new Date(b.dataPagamento + 'T00:00:00');
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+
+                    // Define um valor numérico para cada status para facilitar a ordenação
+                    // 0: Atrasado, 1: Pendente, 2: Pago
+                    const aStatus = a.pago ? 2 : aDate < today ? 0 : 1;
+                    const bStatus = b.pago ? 2 : bDate < today ? 0 : 1;
+
+                    if (aStatus !== bStatus) {
+                        return aStatus - bStatus; // Ordena por status
+                    } else {
+                        // Dentro do mesmo status, ordena por data de vencimento (se houver)
+                        return aDate.getTime() - bDate.getTime();
+                    }
                 });
-                
+
+
                 dayPayments.forEach(payment => {
-                    const paymentDate = new Date(payment.dataPagamento);
-                    const isPastDue = !payment.pago && paymentDate < new Date();
-                    
+                    const paymentDate = new Date(payment.dataPagamento + 'T00:00:00'); // Compara como datas
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const isPastDue = !payment.pago && paymentDate < today;
+
                     const paymentElement = document.createElement('div');
+                    // Adiciona classes para estilização baseada no status (pago, past-due)
                     paymentElement.className = `day-payment ${payment.pago ? 'paid' : isPastDue ? 'past-due' : ''}`;
-                    
+
                     paymentElement.innerHTML = `
                         <h3>${payment.descricao}</h3>
-                        <p><strong>Valor:</strong> R$ ${payment.valor.toFixed(2)}</p>
+                        <p><strong>Valor:</strong> ${formatarValorBRL(payment.valor)}</p>
                         ${payment.clienteNome ? `<p><strong>Cliente:</strong> ${payment.clienteNome}</p>` : ''}
                         <p><strong>Status:</strong> ${payment.pago ? 'Pago' : isPastDue ? 'Atrasado' : 'Pendente'}</p>
                         <p><strong>Vencimento:</strong> ${formatarDataExibicao(payment.dataPagamento)}</p>
-                        
+
                         <div class="payment-actions">
                             ${!payment.pago ? `
                                 <button class="btn-pago" onclick="marcarComoPago('${payment.id}')">
@@ -935,139 +1120,131 @@
                                         <i class="fab fa-whatsapp"></i> WhatsApp
                                     </button>
                                 ` : ''}
-                            ` : ''}
+                            ` : `
+                                 <button class="btn-excluir" onclick="excluirPagamento('${payment.id}')">
+                                     <i class="fas fa-trash-alt"></i> Excluir
+                                 </button>
+                             `}
                         </div>
                     `;
-                    
-                    dayPaymentsList.appendChild(paymentElement);
+
+                    dayPaymentsList.appendChild(paymentElement); // Adiciona o detalhe do pagamento à lista
                 });
             }
-            
-            dayDetailsModal.style.display = 'flex';
+
+            dayDetailsModal.style.display = 'flex'; // Exibe o modal de detalhes do dia
         }
 
-        // Marcar como pago
-        window.marcarComoPago = async function(paymentId) {
-            if (confirm("Deseja marcar este recebimento como pago?")) {
-                try {
-                    await updateDoc(doc(db, "recebimentos", paymentId), {
-                        pago: true
-                    });
-                    await carregarPagamentos();
-                    dayDetailsModal.style.display = 'none';
-                } catch (error) {
-                    console.error("Erro ao atualizar pagamento:", error);
-                    alert("Erro ao marcar como pago");
+
+        // Implementação da função para gerar e exibir o demonstrativo mensal
+        function gerarDemonstrativo() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth(); // 0-indexed
+
+            // Atualiza o título do modal do demonstrativo
+            demonstrativoTitle.textContent = `Demonstrativo de ${getMonthName(month)} de ${year}`;
+            demonstrativoList.innerHTML = ''; // Limpa a lista do demonstrativo anterior
+
+            // Filtra pagamentos para o mês atual (reutiliza lógica de atualizarResumo)
+            const paymentsThisMonth = payments.filter(payment => {
+                if (!payment.dataPagamento) {
+                    return false;
                 }
-            }
-        }
+                const [ano, mes, dia] = payment.dataPagamento.split('-');
+                return parseInt(ano) === year && (parseInt(mes) - 1) === month;
+            });
 
-        // Excluir recebimento
-        window.excluirPagamento = async function(paymentId) {
-            if (confirm("Tem certeza que deseja excluir este recebimento?")) {
-                try {
-                    await deleteDoc(doc(db, "recebimentos", paymentId));
-                    await carregarPagamentos();
-                    dayDetailsModal.style.display = 'none';
-                } catch (error) {
-                    console.error("Erro ao excluir recebimento:", error);
-                    alert("Erro ao excluir");
-                }
-            }
-        }
-
-        // Editar recebimento
-        window.editarPagamento = function(paymentId) {
-            const pagamento = payments.find(p => p.id === paymentId);
-            if (!pagamento) return;
-
-            // Preenche o formulário com os dados do pagamento selecionado
-            document.getElementById('descricao').value = pagamento.descricao;
-            document.getElementById('valor').value = pagamento.valor;
-            document.getElementById('data-pagamento').value = pagamento.dataPagamento;
-
-            // Se houver cliente associado, seleciona ele no <select>
-            const clienteSelect = document.getElementById('cliente');
-            if (pagamento.clienteId) {
-                for (let option of clienteSelect.options) {
-                    if (option.value && JSON.parse(option.value).id === pagamento.clienteId) {
-                        clienteSelect.value = option.value;
-                        break;
-                    }
-                }
+            if (paymentsThisMonth.length === 0) {
+                demonstrativoList.innerHTML = '<p style="text-align: center; color: #64748b;">Nenhum recebimento neste mês para gerar o demonstrativo.</p>';
             } else {
-                clienteSelect.value = '';
-            }
+                 // Objeto para agrupar totais por cliente
+                const summaryByClient = {};
 
-            // Altera o título do modal para "Editar Recebimento"
-            document.querySelector('#payment-modal h2').textContent = 'Editar Recebimento';
-            
-            // Marca o ID que está sendo editado
-            paymentForm.setAttribute('data-editar-id', paymentId);
-            
-            // Exibe o modal
-            modal.style.display = 'flex';
-        };
+                paymentsThisMonth.forEach(payment => {
+                     // Usa o ID do cliente ou 'sem_cliente' se não houver ID
+                    const clientId = payment.clienteId || 'sem_cliente';
+                    const clientName = payment.clienteNome || 'Sem Cliente'; // Usa nome ou 'Sem Cliente'
 
-        async function salvarEdicao(id) {
-            const descricao = document.getElementById('descricao').value;
-            const valor = parseFloat(document.getElementById('valor').value);
-            const dataPagamento = ajustarDataParaFirestore(document.getElementById('data-pagamento').value);
-            const clienteSelect = document.getElementById('cliente');
-            const clienteSelecionado = clienteSelect.value ? JSON.parse(clienteSelect.value) : null;
+                    // Inicializa o cliente no summaryByClient se não existir
+                    if (!summaryByClient[clientId]) {
+                        summaryByClient[clientId] = {
+                            name: clientName,
+                            paid: 0,
+                            pending: 0,
+                            total: 0 // Adiciona total geral por cliente
+                        };
+                    }
 
-            if (!descricao || isNaN(valor) || !dataPagamento) {
-                alert("Preencha todos os campos corretamente.");
-                return;
-            }
-
-            try {
-                await updateDoc(doc(db, "recebimentos", id), {
-                    descricao,
-                    valor,
-                    dataPagamento,
-                    clienteId: clienteSelecionado?.id || null,
-                    clienteNome: clienteSelecionado?.nome || null,
-                    telefone: clienteSelecionado?.telefone || null
+                    // Soma os valores
+                    summaryByClient[clientId].total += payment.valor;
+                    if (payment.pago) {
+                        summaryByClient[clientId].paid += payment.valor;
+                    } else {
+                        summaryByClient[clientId].pending += payment.valor;
+                    }
                 });
 
-                modal.style.display = 'none';
-                paymentForm.reset();
-                paymentForm.removeAttribute('data-editar-id');
-                document.querySelector('#payment-modal h2').textContent = 'Novo Recebimento';
-                await carregarPagamentos();
-                alert("Recebimento atualizado com sucesso!");
-            } catch (error) {
-                console.error("Erro ao editar:", error);
-                alert("Erro ao salvar edição.");
+                // Converte o objeto summaryByClient para um array para facilitar a exibição
+                 const clientsSummaryArray = Object.values(summaryByClient);
+
+                 // Opcional: Ordenar os clientes pelo nome ou total
+                 clientsSummaryArray.sort((a, b) => a.name.localeCompare(b.name)); // Ordena por nome
+
+
+                // Gera o HTML para exibir o resumo por cliente
+                clientsSummaryArray.forEach(clientSummary => {
+                    const clientSummaryElement = document.createElement('div');
+                    clientSummaryElement.className = 'demonstrativo-client-summary';
+
+                    clientSummaryElement.innerHTML = `
+                        <h3>${clientSummary.name}</h3>
+                        <p><strong>Total do Cliente:</strong> ${formatarValorBRL(clientSummary.total)}</p>
+                        <p class="paid-total"><strong>Total Pago:</strong> ${formatarValorBRL(clientSummary.paid)}</p>
+                        <p class="pending-total"><strong>Total Pendente:</strong> ${formatarValorBRL(clientSummary.pending)}</p>
+                    `;
+                    demonstrativoList.appendChild(clientSummaryElement);
+                });
             }
+
+            // Exibe o modal do demonstrativo
+            demonstrativoModal.style.display = 'flex';
         }
 
-        // Cobrar via WhatsApp
-        window.cobrarViaWhatsapp = function(payment) {
-            const mensagem = `Olá! Este é um lembrete sobre o vencimento de "${payment.descricao}".\nValor: R$ ${payment.valor.toFixed(2)}\nVencimento: ${formatarDataExibicao(payment.dataPagamento)}\nPor favor, entre em contato para mais detalhes.`;
-            const url = `https://wa.me/${payment.telefone}?text=${encodeURIComponent(mensagem)}`;
-            window.open(url, "_blank");
-        }
 
-        // Atualiza resumo financeiro
+        // Atualiza o resumo financeiro na parte superior (SOMENTE para o mês atual)
         function atualizarResumo() {
-            let totalPendente = 0;
-            let totalRecebido = 0;
-            
-            payments.forEach(payment => {
+            let totalPendenteMes = 0;
+            let totalRecebidoMes = 0;
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth(); // Month is 0-indexed
+
+            // Filtra pagamentos para incluir APENAS os do mês atual
+            const paymentsThisMonth = payments.filter(payment => {
+                // Garante que dataPagamento existe e é uma string antes de tentar dividir
+                if (!payment.dataPagamento || typeof payment.dataPagamento !== 'string') {
+                    return false;
+                }
+                const [ano, mes, dia] = payment.dataPagamento.split('-');
+                // Note: parseInt(mes) é 1-indexed, por isso subtraímos 1 para comparar com month (0-indexed)
+                return parseInt(ano) === year && (parseInt(mes) - 1) === month;
+            });
+
+            paymentsThisMonth.forEach(payment => {
                 if (payment.pago) {
-                    totalRecebido += payment.valor;
+                    totalRecebidoMes += payment.valor;
                 } else {
-                    totalPendente += payment.valor;
+                    totalPendenteMes += payment.valor;
                 }
             });
-            
-            totalPendenteElement.textContent = `R$ ${totalPendente.toFixed(2)}`;
-            totalRecebidoElement.textContent = `R$ ${totalRecebido.toFixed(2)}`;
+
+             // Formata e exibe os totais
+            totalPendenteElement.textContent = formatarValorBRL(totalPendenteMes);
+            totalRecebidoElement.textContent = formatarValorBRL(totalRecebidoMes);
         }
 
-        // Retorna nome do mês
+
+        // Retorna nome do mês em português
         function getMonthName(month) {
             const months = [
                 'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -1075,6 +1252,7 @@
             ];
             return months[month];
         }
+
     </script>
 </body>
-</html>>
+</html>
