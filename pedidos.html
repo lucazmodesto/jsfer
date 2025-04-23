@@ -205,6 +205,21 @@
              border-color: #004085;
          }
 
+         .btn-remove-payment {
+             background-color: var(--danger-color);
+             color: white;
+             border-color: var(--danger-color);
+         }
+         .btn-remove-payment:hover {
+             background-color: #c82333;
+             border-color: #bd2130;
+         }
+
+         .payment-actions {
+             display: flex;
+             flex-direction: column;
+             gap: 10px;
+         }
 
          .info-message {
              text-align: center;
@@ -241,25 +256,31 @@
                   align-self: flex-start;
               }
          }
-
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Lista de Pedidos</h1>
-
         <div id="pedidos-list">
             <p class="info-message">Carregando pedidos...</p>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js"></script>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, query, orderBy, runTransaction, where, addDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
+        import { 
+            getFirestore, 
+            collection, 
+            getDocs, 
+            doc, 
+            updateDoc, 
+            query, 
+            orderBy, 
+            where, 
+            addDoc,
+            getDoc,
+            deleteField
+        } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHKoGOHXhWOax3AUDqzPGRzHBVUK-oMp8",
@@ -272,7 +293,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
         const pedidosListElement = document.getElementById('pedidos-list');
 
         function formatarValorBRL(valor) {
@@ -289,18 +309,18 @@
             return dataString;
         }
 
-         function ajustarDataParaYYYYMMDD(dateString) {
-             if (!dateString) return '';
-             try {
-                 const date = new Date(dateString);
-                 if (!isNaN(date.getTime())) {
-                     return date.toISOString().substring(0, 10);
-                 }
-             } catch (e) {
-                 console.error("Erro ao ajustar data para YYYY-MM-DD:", dateString, e);
-             }
-             return '';
-         }
+        function ajustarDataParaYYYYMMDD(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                if (!isNaN(date.getTime())) {
+                    return date.toISOString().substring(0, 10);
+                }
+            } catch (e) {
+                console.error("Erro ao ajustar data para YYYY-MM-DD:", dateString, e);
+            }
+            return '';
+        }
 
         function calcularDiasRestantes(dataString) {
             if (!dataString || typeof dataString !== 'string') return 'Data Inválida';
@@ -360,7 +380,6 @@
                          }
                     }
 
-
                     pedidoItemElement.innerHTML = `
                         <div class="pedido-header">
                             <span><strong>Pedido #:</strong> ${pedido.numeroPedido || pedidoId.substring(0, 8).toUpperCase()}</span>
@@ -393,9 +412,15 @@
                                 <div>
                                     <label for="data-pagamento-oficial-${pedidoId}">Data Oficial de Pagamento:</label>
                                     <input type="date" id="data-pagamento-oficial-${pedidoId}" value="${ajustarDataParaYYYYMMDD(pedido.dataPagamentoOficial)}">
-                                    <button class="btn-update-payment" data-pedido-id="${pedidoId}" data-date-type="pagamento">
-                                         <i class="fas fa-dollar-sign"></i> Salvar Pagamento e Atualizar Recebimentos
-                                    </button>
+                                    <div class="payment-actions">
+                                        <button class="btn-update-payment" data-pedido-id="${pedidoId}" data-date-type="pagamento">
+                                            <i class="fas fa-dollar-sign"></i> Salvar Pagamento
+                                        </button>
+                                        ${pedido.dataPagamentoOficial ? `
+                                        <button class="btn-remove-payment" data-pedido-id="${pedidoId}">
+                                            <i class="fas fa-trash-alt"></i> Remover Data de Pagamento
+                                        </button>` : ''}
+                                    </div>
                                 </div>
                             </div>
                             ${pedido.orcamentoId ? `<p style="margin-top: 15px;"><a href="telaorcamento.html?orcamentoId=${pedido.orcamentoId}" target="_blank">Ver Orçamento Original</a></p>` : ''}
@@ -457,57 +482,108 @@
                     }
 
                     try {
-                        await runTransaction(db, async (transaction) => {
-                            const pedidoRef = doc(db, "pedidos", pedidoId);
-                            const pedidoSnap = await transaction.get(pedidoRef);
+                        const pedidoRef = doc(db, "pedidos", pedidoId);
+                        const pedidoSnap = await getDoc(pedidoRef);
+                        
+                        if (!pedidoSnap.exists()) {
+                            throw "Pedido não encontrado.";
+                        }
+                        
+                        const pedidoData = pedidoSnap.data();
+                        const pedidoTotal = pedidoData.totalGeral || 0;
+                        const clienteId = pedidoData.clienteId || null;
+                        const clienteNome = pedidoData.clienteNome || null;
+                        const clienteTelefone = pedidoData.clienteTelefone || null;
 
-                            if (!pedidoSnap.exists()) {
-                                throw "Pedido não encontrado durante a transação.";
-                            }
-                            const pedidoData = pedidoSnap.data();
-                            const pedidoTotal = pedidoData.totalGeral || 0;
-                            const clienteId = pedidoData.clienteId || null;
-                            const clienteNome = pedidoData.clienteNome || null;
+                        const recebimentosCollectionRef = collection(db, "recebimentos");
+                        const qRecebimentoExistente = query(
+                            recebimentosCollectionRef,
+                            where("pedidoId", "==", pedidoId)
+                        );
+                        const recebimentoSnapshot = await getDocs(qRecebimentoExistente);
 
-                            transaction.update(pedidoRef, {
-                                dataPagamentoOficial: dataPagamentoOficial
-                            });
-
-                            const recebimentosCollectionRef = collection(db, "recebimentos");
-                            const qRecebimentoExistente = query(
-                                recebimentosCollectionRef,
-                                where("pedidoId", "==", pedidoId)
-                            );
-                            const recebimentoSnapshot = await transaction.get(qRecebimentoExistente);
-
-                            if (!recebimentoSnapshot.empty) {
-                                const recebimentoDoc = recebimentoSnapshot.docs[0];
-                                const recebimentoRef = doc(db, "recebimentos", recebimentoDoc.id);
-                                transaction.update(recebimentoRef, {
-                                    valor: pedidoTotal,
-                                    dataPagamento: dataPagamentoOficial,
-                                    clienteId: clienteId,
-                                    clienteNome: clienteNome,
-                                    pago: false, // Novos recebimentos começam como pendentes
-                                });
-                           
-                            }
+                        await updateDoc(pedidoRef, {
+                            dataPagamentoOficial: dataPagamentoOficial
                         });
 
-                        alert("Data de pagamento oficial salva e recebimento atualizado!");
+                        if (recebimentoSnapshot.empty) {
+                            await addDoc(recebimentosCollectionRef, {
+                                descricao: `Recebimento do Pedido #${pedidoData.numeroPedido || pedidoId.substring(0, 8)}`,
+                                valor: pedidoTotal,
+                                dataPagamento: dataPagamentoOficial,
+                                clienteId: clienteId,
+                                clienteNome: clienteNome,
+                                telefone: clienteTelefone,
+                                pago: false,
+                                pedidoId: pedidoId,
+                                createdAt: new Date()
+                            });
+                        } else {
+                            const recebimentoDoc = recebimentoSnapshot.docs[0];
+                            await updateDoc(doc(db, "recebimentos", recebimentoDoc.id), {
+                                valor: pedidoTotal,
+                                dataPagamento: dataPagamentoOficial,
+                                clienteId: clienteId,
+                                clienteNome: clienteNome,
+                                telefone: clienteTelefone,
+                                pago: false
+                            });
+                        }
+
+                        alert("Data de pagamento oficial salva e recebimento registrado no calendário!");
+                        carregarPedidos();
                     } catch (error) {
-                        console.error("Erro na transação de salvar pagamento/atualizar recebimento:", error);
-                        alert("Erro ao salvar data de pagamento oficial e atualizar recebimento.");
+                        console.error("Erro ao processar pagamento:", error);
+                        alert("Erro ao processar pagamento: " + error.message);
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-remove-payment').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const pedidoId = event.target.dataset.pedidoId;
+                    
+                    if (!confirm("Tem certeza que deseja remover a data de pagamento deste pedido?")) {
+                        return;
+                    }
+
+                    try {
+                        const pedidoRef = doc(db, "pedidos", pedidoId);
+                        
+                        // Remove a data de pagamento do pedido
+                        await updateDoc(pedidoRef, {
+                            dataPagamentoOficial: deleteField()
+                        });
+
+                        // Verifica se existe um recebimento associado
+                        const recebimentosCollectionRef = collection(db, "recebimentos");
+                        const qRecebimentoExistente = query(
+                            recebimentosCollectionRef,
+                            where("pedidoId", "==", pedidoId)
+                        );
+                        const recebimentoSnapshot = await getDocs(qRecebimentoExistente);
+
+                        if (!recebimentoSnapshot.empty) {
+                            const recebimentoDoc = recebimentoSnapshot.docs[0];
+                            // Você pode optar por remover ou marcar como cancelado
+                            // Aqui estou apenas atualizando o status
+                            await updateDoc(doc(db, "recebimentos", recebimentoDoc.id), {
+                                pago: false,
+                                dataPagamento: deleteField()
+                            });
+                        }
+
+                        alert("Data de pagamento removida com sucesso!");
+                        carregarPedidos();
+                    } catch (error) {
+                        console.error("Erro ao remover data de pagamento:", error);
+                        alert("Erro ao remover data de pagamento: " + error.message);
                     }
                 });
             });
         }
 
-
         window.addEventListener('load', carregarPedidos);
-
-
     </script>
 </body>
 </html>
-
